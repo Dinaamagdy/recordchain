@@ -5,11 +5,11 @@ import imp
 
 TEMPLATE = """
 addr = "127.0.0.1"
-port = 6379
+port = 5000
 password_ = ""
 unixsocket = ""
-ssl = false
-sslkey = false
+ssl = true
+ssl_cert_file= ""
 """
 
 JSConfigBase = j.tools.configmanager.base_class_config
@@ -110,11 +110,6 @@ class GedisClient(JSConfigBase):
             self.logger.debug("cmds:%s"%fname)
             self.cmds.__dict__[cmds_name_lower] =m.CMDS(client=self,cmds=cmds.cmds)
 
-    @property
-    def ssl_certfile_path(self):
-        p = j.sal.fs.getDirName(self.config.path) + "cert.pem"
-        if self.config.data["sslkey"]:
-            return p
 
     @property
     def redis(self):
@@ -130,29 +125,20 @@ class GedisClient(JSConfigBase):
             addr = d["addr"]
             port = d["port"]
             password = d["password_"]
-            unixsocket = d["unixsocket"]
-            set_patch=True
-            ardb_patch=False
 
             self.logger.info("redisclient: %s:%s (ssl:%s)"%(addr,port,d["ssl"]))
 
-            # NO PATHS IN CONFIG !!!!!!!, needs to come from properties above (convention over configuration)
-
-            ssl_certfile = self.ssl_certfile_path if d['ssl'] else None
-
-            if unixsocket == "":
-                unixsocket = None
-
-            # import ipdb; ipdb.set_trace()
+            ssl_certfile = d['ssl_cert_file'] if d['ssl'] else ''
             self._redis = j.clients.redis.get(
-                ipaddr=addr, port=port, password=password, ssl=d["ssl"], ssl_ca_certs=ssl_certfile)
+                ipaddr=addr,
+                port=port,
+                password=password,
+                ssl=d["ssl"],
+                ssl_ca_certs=ssl_certfile
+            )
 
         return self._redis
 
-    def ssl_keys_save(self,  ssl_certfile):
-        if j.sal.fs.exists(ssl_certfile):
-            ssl_certfile = j.sal.fs.readFile(ssl_certfile)
-        j.sal.fs.writeFile(self.ssl_certfile_path, ssl_certfile)
 
     def __str__(self):
         return "gedisclient:%-14s %-25s:%-4s (ssl:%s)" % (self.instance, self.config.data["addr"],  self.config.data["port"], self.config.data["ssl"])

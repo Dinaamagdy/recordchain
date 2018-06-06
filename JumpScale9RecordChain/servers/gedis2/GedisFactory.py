@@ -38,7 +38,6 @@ class GedisFactory(JSConfigBase):
 
     def start(self, instance="main", schema_path="", background=False, reset=False):
         server = self.get(instance,interactive=False)
-        ssl = server.config.data['ssl']
         if background:
             cmd = "js9 '%s.start(instance=\"%s\", schema_path=\"%s\", reset=\"%s\")'" % (
                 self.__jslocation__, instance, schema_path, reset)
@@ -53,19 +52,45 @@ class GedisFactory(JSConfigBase):
             server = self.get(instance, create=False)
             server.start(schema_path=schema_path, reset=reset)
 
-    def configure(self, instance="main", port=8889, addr="localhost", secret="", namespace="",ssl=False, path="", interactive=False, start=False, background=True):
+    def configure(
+            self,
+            instance="main",
+            port=8889,
+            addr="localhost",
+            secret="",
+            namespace="",
+            ssl=False,
+            path="",
+            interactive=False,
+            start=False,
+            background=True
+    ):
         """
         e.g.
         js9 'j.servers.gedis2.start()'  
         will be different name depending the implementation
         """
-        if path=="":
+        if not path:
             path = j.sal.fs.getcwd()
-        data = {"port": port, "addr": addr, "adminsecret_": secret, "ssl": ssl, "path":path, "namespace":namespace}
-        server = self._child_class(instance=instance, data=data, parent=self, interactive=interactive)
+
+        data = {
+            "port": port,
+            "addr": addr,
+            "adminsecret_": secret,
+            "ssl": ssl,
+            "path":path,
+            "namespace":namespace
+        }
+
+        server = self._child_class(
+            instance=instance,
+            data=data,
+            parent=self,
+            interactive=interactive
+        )
 
         if start:
-            self.start(instance=instance, background=background)
+            self.start(instance=instance, background=background, schema_path=path)
         return server
 
     def cmds_get(self,namespace,capnpbin):
@@ -79,9 +104,21 @@ class GedisFactory(JSConfigBase):
         server = self.get(instance=instance,interactive=False)
         ssl = server.config.data['ssl']
         if not ssl:
-            client = j.clients.gedis2.configure(instance, ipaddr=server.config.data['addr'], port=int(server.config.data['port']), ssl= False)
+            client = j.clients.gedis2.configure(
+                instance,
+                ipaddr=server.config.data['addr'],
+                port=int(server.config.data['port']),
+                ssl= False
+            )
         else:
-            client = j.clients.gedis2.configure(instance, ipaddr=server.config.data['addr'], port=int(server.config.data['port']),ssl=ssl, ssl_keyfile=None, ssl_certfile=server.ssl_cert_path)
+            client = j.clients.gedis2.configure(
+                instance,
+                ipaddr=server.config.data['addr'],
+                port=int(server.config.data['port']),
+                ssl=ssl,
+                ssl_certfile=server.ssl_cert_path
+            )
+
         return client
 
     @property
@@ -112,7 +149,6 @@ class GedisFactory(JSConfigBase):
     def _path(self):
         return j.sal.fs.getDirName(os.path.abspath(__file__))
 
-
     def test(self, dobenchmarks=True,reset=False):
         """
         js9 'j.servers.gedis2.test(dobenchmarks=False)'
@@ -129,7 +165,17 @@ class GedisFactory(JSConfigBase):
 
         classpath = j.sal.fs.getDirName(os.path.abspath(__file__)) +"EXAMPLE"
 
-        self.start(instance="test", schema_path=classpath, background=True)
+        self.configure(
+            instance="test",
+            port=5000,
+            addr="127.0.0.1",
+            secret="1234",
+            ssl=True,
+            namespace = "jumpscale.gedis2.example",
+            path=classpath,
+            interactive=False,
+            background=True,
+            start=True)
 
         r = self.client_get('test')
 
@@ -145,7 +191,6 @@ class GedisFactory(JSConfigBase):
         for namespace,capnpbin in cmds_meta["cmds"].items():
             cmds_meta[namespace] = GedisCmds(namespace=namespace,capnpbin=capnpbin)
 
-        
         # j.clients.gedis2.test()
 
         s= j.data.schema.schema_from_url('jumpscale.gedis2.example.system.test.in')

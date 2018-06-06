@@ -35,17 +35,24 @@ class GedisClientFactory(JSConfigBase):
         j.sal.fs.touch(os.path.join(self.code_generation_dir, '/__init__.py'))
         self.logger.debug("codegendir:%s" % self.code_generation_dir)    
         
-    def client_get(self,instance="main"):
-        client = self.get(instance=instance)
+    def client_get(self,instance="main", data={}):
+        client = self.get(instance=instance, data=data)
         cl=GedisClientCmds()
         cl._client = client
         cl.models = client.models
         cl.__dict__.update(cl._client.cmds.__dict__)
         return cl
         
-    def configure(self, instance="core",ipaddr="localhost", \
-            port=5000, password="", unixsocket="", 
-            ssl=False, ssl_keyfile=None, ssl_certfile=None):
+    def configure(
+        self,
+        instance="main",
+        ipaddr="localhost",
+        port=5000,
+        password="",
+        unixsocket="",
+        ssl=False,
+        ssl_certfile=None
+    ):
 
         """
         #TODO:*1 need to define well what this keyfile/certfile is
@@ -58,16 +65,27 @@ class GedisClientFactory(JSConfigBase):
         data["ssl"] = ssl
         if ssl_certfile:
             #check if its a path, if yes load
-            data["ssl"] = True 
-            data["sslkey"] = True #means path will be used for sslkey at redis client
+            data["ssl"] = True
+            data['ssl_cert_file'] = ssl_certfile
+        else:
+            # SSL is true but no certificate provided
+            # Use default location
+            if ssl:
+                path = os.path.join(
+                    os.path.join(
+                        j.dirs.VARDIR,
+                        'codegen',
+                        'gedis',
+                        instance,
+                        'ca.crt'
+                    ))
+                data['ssl_cert_file'] = path
+        if ssl:
+            self.logger.info('Gedis2 client : Using SSL certificate from %s' % data['ssl_cert_file'])
 
-
-        r = self.get(instance=instance, data=data)
-
-        if ssl_certfile:
-            #check if its a path, if yes safe the key paths into config
-            r.ssl_keys_save(ssl_certfile)
-        return self.client_get(instance=instance)
+        # make sure instance is configured
+        # self.get(instance=instance, data=data)
+        return self.client_get(instance=instance, data=data)
 
     @property
     def _path(self):
@@ -110,12 +128,27 @@ class GedisClientFactory(JSConfigBase):
                     os.path.abspath(__file__)
                 )
             )) + "servers/gedis2/EXAMPLE"
-        j.servers.gedis2.start(instance="test",schema_path=schema_path, background=True)
 
 
-        cl = self.configure(instance="test",ipaddr="localhost", \
-            port=5000, password="", unixsocket="",
-            ssl=False, ssl_keyfile=None, ssl_certfile=None)
+        j.servers.gedis2.configure(
+            instance="test",
+            port=5000,
+            namespace='jumpscale.gedis2.example',
+            ssl=True,
+            start=True,
+            background=True,
+            path=schema_path
+        )
+
+        cl = j.clients.gedis2.configure(
+            instance="test",
+            ipaddr="localhost",
+            port=5000,
+            password="",
+            unixsocket="",
+            ssl=True,
+            ssl_certfile=None
+        )
 
         o=cl.models.test_gedis2_cmd1.new()
         o.cmd.name="aname"

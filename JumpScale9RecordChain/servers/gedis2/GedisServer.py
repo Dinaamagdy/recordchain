@@ -18,10 +18,10 @@ class GedisServer(StreamServer, JSConfigBase):
     TEMPLATE = """
     addr = "localhost"
     port = "9900"
-    ssl = false
+    ssl = true
     adminsecret_ = ""
     path = ""
-    namespace = ""
+    namespace = "test"
     """
 
     def __init__(
@@ -52,6 +52,8 @@ class GedisServer(StreamServer, JSConfigBase):
         self.schema_urls = []
         self.serializer = None
         self._inited = False
+        self.ssl_priv_key_path = None
+        self.ssl_cert_path = None
 
         host = self.config.data["addr"]
         port = int(self.config.data["port"])
@@ -59,36 +61,40 @@ class GedisServer(StreamServer, JSConfigBase):
         self.address = '{}:{}'.format(host, port)
 
         if self.config.data['ssl']:
-            self.logger.info("ssl enabled, keys in %s" %
-                             self.ssl_priv_key_path)
-            self.sslkeys_generate()
+            self.ssl_priv_key_path, self.ssl_cert_path = self.sslkeys_generate()
+            self.logger.info("ssl enabled, keys in %s" % self.ssl_priv_key_path)
 
             self.server = StreamServer(
-                (host, port), spawn=Pool(), handle=self.__handle_connection, keyfile=self.ssl_priv_key_path, certfile=self.ssl_cert_path)
+                (host, port),
+                spawn=Pool(),
+                handle=self.__handle_connection,
+                keyfile=self.ssl_priv_key_path,
+                certfile=self.ssl_cert_path
+            )
         else:
             self.server = StreamServer(
-                (host, port), spawn=Pool(), handle=self.__handle_connection)
+                (host, port),
+                spawn=Pool(),
+                handle=self.__handle_connection
+            )
 
-        j.servers.gedis2.latest = self        
+        j.servers.gedis2.latest = self
 
     def sslkeys_generate(self):
 
-        res = j.sal.ssl.ca_cert_generate(j.sal.fs.getDirName(self.config.path))
+        path = os.path.dirname(self.server_path)
+
+        res = j.sal.ssl.ca_cert_generate(path)
+
         if res:
-            self.logger.info("generated sslkeys for gedis in %s" %
-                             self.config.path)
+            self.logger.info("generated sslkeys for gedis in %s" % path)
+        else:
+            self.logger.info('using existing key and cerificate for gedis @ %s' % path)
 
-    @property
-    def ssl_priv_key_path(self):
-        p = j.sal.fs.getDirName(self.config.path) + "ca.key"
-        if self.config.data["ssl"]:
-            return p
+        key = os.path.join(path, 'ca.key')
+        cert = os.path.join(path, 'ca.crt')
 
-    @property
-    def ssl_cert_path(self):
-        p = j.sal.fs.getDirName(self.config.path) + "ca.crt"
-        if self.config.data["ssl"]:
-            return p
+        return key, cert
 
     def __handle_connection(
         self,
