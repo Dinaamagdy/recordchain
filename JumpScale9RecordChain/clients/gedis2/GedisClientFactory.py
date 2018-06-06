@@ -11,12 +11,25 @@ class GedisClientCmds():
     def __init__(self):
         pass
 
+    def __str__(self):
+        if self._client.config.data["ssl"]:
+            return "Gedis Client: (instance=%s) (address=%s:%-4s)\n(ssl=True, certificate:%s)" % (
+                self._client.instance,
+                self._client.config.data["addr"],
+                self._client.config.data["port"],
+                self._client.config.data["ssl_cert_file"]
+            )
+
+        return "Gedis Client: (instance=%s) (address=%s:%-4s)" % (
+            self._client.instance,
+            self._client.config.data["addr"],
+            self._client.config.data["port"]
+        )
+
+    __repr__ = __str__
+
 
 class GedisClientFactory(JSConfigBase):
-    """
-    is nothing more for now than the redis_config client
-    """
-
     def __init__(self):
         self.__jslocation__ = "j.clients.gedis2"
         JSConfigBase.__init__(self, GedisClient)
@@ -24,7 +37,13 @@ class GedisClientFactory(JSConfigBase):
         self._template_code_client = None
         self._code_model_template = None
 
-        self.code_generation_dir = os.path.join(j.dirs.VARDIR, 'codegen', 'gedis')
+        # Set Code generation dir
+        # /opt/var/codegen/gedis/{instance}
+        self.code_generation_dir = os.path.join(
+            j.dirs.VARDIR,
+            'codegen',
+            'gedis'
+        )
 
         if not j.sal.fs.exists(self.code_generation_dir):
             j.sal.fs.createDir(self.code_generation_dir)
@@ -32,45 +51,46 @@ class GedisClientFactory(JSConfigBase):
         if not self.code_generation_dir in sys.path:
             sys.path.append(self.code_generation_dir)
 
-        j.sal.fs.touch(os.path.join(self.code_generation_dir, '/__init__.py'))
-        self.logger.debug("codegendir:%s" % self.code_generation_dir)    
-        
-    def client_get(self,instance="main", data={}):
-        client = self.get(instance=instance, data=data)
-        cl=GedisClientCmds()
+        j.sal.fs.touch(os.path.join(
+            self.code_generation_dir, '/__init__.py')
+        )
+
+        self.logger.debug("codegendir:%s" % self.code_generation_dir)
+
+    def get(
+        self,
+        instance='main',
+        data={}
+    ):
+        client = super(GedisClientFactory, self).get(instance=instance, data=data)
+        cl = GedisClientCmds()
         cl._client = client
         cl.models = client.models
         cl.__dict__.update(cl._client.cmds.__dict__)
         return cl
-        
+
     def configure(
         self,
         instance="main",
         ipaddr="localhost",
         port=5000,
         password="",
-        unixsocket="",
-        ssl=False,
+        ssl=True,
         ssl_certfile=None
     ):
-
-        """
-        #TODO:*1 need to define well what this keyfile/certfile is
-        """
         data = {}
         data["addr"] = ipaddr
         data["port"] = port
         data["password_"] = password
-        data["unixsocket"] = unixsocket
         data["ssl"] = ssl
-        if ssl_certfile:
-            #check if its a path, if yes load
-            data["ssl"] = True
-            data['ssl_cert_file'] = ssl_certfile
-        else:
-            # SSL is true but no certificate provided
-            # Use default location
-            if ssl:
+
+        if ssl:
+            # Set SSL certificate file path to ssl_certfile if not empty
+            # otherwise /opt/var/codegen/gedis/{instance}
+            # because this is where server generates certifications
+            if ssl_certfile:
+                data['ssl_cert_file'] = ssl_certfile
+            else:
                 path = os.path.join(
                     os.path.join(
                         j.dirs.VARDIR,
@@ -80,17 +100,12 @@ class GedisClientFactory(JSConfigBase):
                         'ca.crt'
                     ))
                 data['ssl_cert_file'] = path
-        if ssl:
             self.logger.info('Gedis2 client : Using SSL certificate from %s' % data['ssl_cert_file'])
-
-        # make sure instance is configured
-        # self.get(instance=instance, data=data)
-        return self.client_get(instance=instance, data=data)
+        return self.get(instance=instance, data=data)
 
     @property
     def _path(self):
         return j.sal.fs.getDirName(os.path.abspath(__file__))
-
 
     @property
     def template_engine(self):
@@ -120,7 +135,6 @@ class GedisClientFactory(JSConfigBase):
     def test(self, dobenchmarks=True):
         """
         js9 'j.clients.gedis2.test()'
-
         """
         schema_path = j.sal.fs.getDirName(
             j.sal.fs.getDirName(
@@ -128,7 +142,6 @@ class GedisClientFactory(JSConfigBase):
                     os.path.abspath(__file__)
                 )
             )) + "servers/gedis2/EXAMPLE"
-
 
         j.servers.gedis2.configure(
             instance="test",
@@ -179,5 +192,3 @@ class GedisClientFactory(JSConfigBase):
         assert o.name == o2.name
         assert cl.system.ping() == b'PONG'
         assert cl.system.ping_bool() == 1
-        
-        

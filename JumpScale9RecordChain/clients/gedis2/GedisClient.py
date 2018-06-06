@@ -7,7 +7,6 @@ TEMPLATE = """
 addr = "127.0.0.1"
 port = 5000
 password_ = ""
-unixsocket = ""
 ssl = true
 ssl_cert_file= ""
 """
@@ -110,7 +109,6 @@ class GedisClient(JSConfigBase):
             self.logger.debug("cmds:%s"%fname)
             self.cmds.__dict__[cmds_name_lower] =m.CMDS(client=self,cmds=cmds.cmds)
 
-
     @property
     def redis(self):
         """
@@ -125,10 +123,13 @@ class GedisClient(JSConfigBase):
             addr = d["addr"]
             port = d["port"]
             password = d["password_"]
+            ssl_certfile = d['ssl_cert_file']
 
-            self.logger.info("redisclient: %s:%s (ssl:%s)"%(addr,port,d["ssl"]))
+            if d['ssl']:
+                self.logger.info("redisclient: %s:%s (ssl:True  cert:%s)"%(addr, port, ssl_certfile))
+            else:
+                self.logger.info("redisclient: %s:%s " % (addr, port))
 
-            ssl_certfile = d['ssl_cert_file'] if d['ssl'] else ''
             self._redis = j.clients.redis.get(
                 ipaddr=addr,
                 port=port,
@@ -136,11 +137,4 @@ class GedisClient(JSConfigBase):
                 ssl=d["ssl"],
                 ssl_ca_certs=ssl_certfile
             )
-
         return self._redis
-
-
-    def __str__(self):
-        return "gedisclient:%-14s %-25s:%-4s (ssl:%s)" % (self.instance, self.config.data["addr"],  self.config.data["port"], self.config.data["ssl"])
-
-    __repr__ = __str__

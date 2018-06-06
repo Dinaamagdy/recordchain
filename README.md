@@ -35,22 +35,46 @@ sh install.sh
    - *schema_path*: dir containing `schema.toml`
 
 ### client
-```
-In [6]: cl = j.clients.gedis2.get('test')
-In [7]: cl.redis.execute_command('system.ping')
-Out[7]: b'PONG'
-```
 
-or
+**Configuration**
 
-```
-cl = j.clients.gedis2.configure(instance="test",ipaddr="localhost", \
-    port=5000, password="", unixsocket="",
-    ssl=False, ssl_keyfile=None, ssl_certfile=None)
+- Sample config
 
-In [7]: cl.system.ping()
-Out[7]: b'PONG'
-```
+    ```
+    addr = 'localhost'
+    password_ = ''
+    port = 5000
+    ssl = true
+    ssl_cert_file = ''
+    ```
+
+- SSL support
+    - Gedis2 Server by default generates cert file in `/opt/var/codegen/{namespace}/ca.crt`
+    - Enable SSL for client by setting `ssl = true`
+    - Certificate file is taken from `ssl_cert_file` if not empty, otherwise `/opt/var/codegen/{namespace}/ca.crt`
+
+**Get Gedis2 client**
+
+  - *Use configuration from config file*
+    ```
+    In [6]: cl = j.clients.gedis2.get(instance='test')
+    In [7]: cl.redis.execute_command('system.ping')
+    Out[7]: b'PONG'
+    ```
+  - *Provide your own configuration on the fly*
+    ```
+    cl = j.clients.gedis2.configure(
+        instance="test",
+        ipaddr="localhost",
+        port=5000,
+        password="",
+        ssl=True,
+        ssl_certfile=None
+    )
+
+    In [7]: cl.system.ping()
+    Out[7]: b'PONG'
+    ```
 
 ### Tests
 
