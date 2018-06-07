@@ -1,3 +1,5 @@
+from js9 import j
+
 from .protocol import CommandParser, ResponseWriter
 
 

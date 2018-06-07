@@ -175,6 +175,11 @@ class GedisServer(StreamServer, JSConfigBase):
         dest = os.path.join(os.path.dirname(self.server_path), 'start.py')
         j.sal.fs.writeFile(dest, code)
 
+        # Copy test.py
+        code = j.servers.gedis2.code_test_template.render(config=self.config.data, instance=self.instance)
+        dest = os.path.join(os.path.dirname(self.server_path), 'test.py')
+        j.sal.fs.writeFile(dest, code)
+
         if self._inited is False:
             self.init()
 

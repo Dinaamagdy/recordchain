@@ -127,14 +127,14 @@ if p.platformtype.isLinux:
         res = cl.system.test_nontyped("name", 10)
         assert j.data.serializer.json.loads(res) == ['name', 10]
 
-        s = j.data.schema.schema_from_url('jumpscale.gedis2.example.system.test.in')
+        s = j.data.schema.schema_from_url('example.system.test.in')
         o = s.new()
         o.name = "aname"
         o.nr = 1
 
         res = cl.system.test("aname", 1)
 
-        s = j.data.schema.schema_from_url('jumpscale.gedis2.example.system.test.out')
+        s = j.data.schema.schema_from_url('example.system.test.out')
 
         o2 = s.get(capnpbin=res.data)
 

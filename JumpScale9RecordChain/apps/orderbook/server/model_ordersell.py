@@ -8,12 +8,13 @@ SCHEMA="""
 @url = threefoldtoken.order.sell
 @name = ordersell
 comment = ""
-currency_to_sell = "" (S)
-currency_accept = (LS)  # can accept more than one currency 
-price_min =  (N)        # can be defined in any currency
-expiration =  (D)       # can be defined as e.g. +1h
-sell_to = (LS)          # list of wallet addresses which are allowed to buy from me
-secret = (LS)           # if used the buyers need to have one of the secrets 
+currency_to_sell = "" (S)   # currency types BTC/ETH/XRP/TFT
+currency_accept = (LS)      # can accept more than one currency 
+price_min =  (N)            # can be defined in any currency
+expiration =  (D)           # can be defined as e.g. +1h
+sell_to = (LS)              # list of wallet addresses which are allowed to buy from me
+secret = (LS)               # if used the buyers need to have one of the secrets 
+owner_email_addr = (S)      # email addr used through IYO when order was created
 
 
 """

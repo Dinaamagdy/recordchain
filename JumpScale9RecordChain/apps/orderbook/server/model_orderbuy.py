@@ -8,12 +8,14 @@ SCHEMA="""
 @url = threefoldtoken.order.buy
 @name = orderbuy
 comment = ""
-currency_to_buy = "" (S)
-currency_mine = (LS)    # which of my currencies I am selling (can be more than 1)
-price_max =  (N)   # can be defined in any currency
-expiration =  (D)  # can be defined as e.g. +1h
-buy_from = (LS)    # list of wallet addresses which I want to buy from
-secret = "" (S)    # the optional secret to use when doing a buy order, only relevant when buy_from used
+currency_to_buy = "" (S)    # currency types BTC/ETH/XRP/TFT
+currency_mine = (LS)        # which of my currencies I am selling (can be more than 1)
+price_max =  (N)            # can be defined in any currency
+expiration =  (D)           # can be defined as e.g. +1h
+buy_from = (LS)             # list of wallet addresses which I want to buy from
+secret = "" (S)             # the optional secret to use when doing a buy order, only relevant when buy_from used
+owner_email_addr = (S)      # email addr used through IYO when order was created
+
 
 
 
@@ -68,7 +70,6 @@ class model_orderbuy(JSBASE):
         before an object is set in the DB it will pass through this function, 
         this allows addional manipulation of object or security checks
         """
-        #TODO:*1 remove owner_email_addr & secret
         return obj
 
     def hook_get(self,obj):
@@ -77,6 +78,5 @@ class model_orderbuy(JSBASE):
         it will pass through this function, 
         this allows addional manipulation of object or security checks
         """
-        #TODO:*1 remove owner_email_addr & secret
         return obj
 

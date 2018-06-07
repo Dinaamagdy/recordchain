@@ -32,7 +32,7 @@ class system(JSBASE):
         """  
         s=j.servers.gedis2.latest.cmds_meta
         res={}
-        res["namespace"]=j.servers.gedis2.latest.namespace
+        res["namespace"]=j.servers.gedis2.latest.instance
         res["cmds"]={}
         for key,item in s.items():
             res["cmds"][key] = item.data.data
@@ -51,23 +51,28 @@ class system(JSBASE):
         some test method, which returns something easy
 
         ```in
-        name = ""
+        name = "" (S)
         nr = 0 (I)
         ```
 
         ```out
-        name = ""
+        name = "" (S)
         nr = 0 (I)
-        list_int = (LI)        
         ```
-
-        """  
+        """
         o=schema_out.new()
         o.name = name
         o.nr = nr
-        # o.list_int = [1,2,3]
-
         return o
 
-    def test_nontyped(self,name,nr):    
-        return [name,nr]
+    def test_nontyped(self,name,nr):
+        """
+        some test method, which returns something easy
+
+        ```in
+        name = "" (S)
+        nr = 0 (I)
+        ```
+
+        """
+        return [name, nr]

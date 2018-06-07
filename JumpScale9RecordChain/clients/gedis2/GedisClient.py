@@ -95,7 +95,6 @@ class GedisClient(JSConfigBase):
             # LOW LEVEL AT THIS TIME BUT TO SHOW SOMETHING
             cmds_meta =self.redis.execute_command("system.api_meta")
             cmds_meta = j.data.serializer.msgpack.loads(cmds_meta)
-
             self.namespace = cmds_meta["namespace"]
             for namespace_full, capnpbin in cmds_meta["cmds"].items():
                 shortname = namespace_full.split(".")[-1]
