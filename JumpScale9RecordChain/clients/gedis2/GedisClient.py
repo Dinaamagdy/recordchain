@@ -90,7 +90,6 @@ class GedisClient(JSConfigBase):
         self.cmds = CmdsBase()
         self.cmds_meta = {}
         self._connected = True
-
         try:
             # LOW LEVEL AT THIS TIME BUT TO SHOW SOMETHING
             cmds_meta =self.redis.execute_command("system.api_meta")

@@ -103,6 +103,9 @@ ENV/
 #Pycharm
 .idea
 
-JumpScale9RecordChain/apps/example/client/*
-JumpScale9RecordChain/apps/example/schema/*
-JumpScale9RecordChain/apps/example/server/*
+client/*
+schema/*
+ca.crt
+ca.key
+example/server/*
+cale9RecordChain/apps/schema/
