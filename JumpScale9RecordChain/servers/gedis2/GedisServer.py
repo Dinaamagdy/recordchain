@@ -145,7 +145,6 @@ class GedisServer(StreamServer, JSConfigBase):
 
     def _start(self, reset=False):
 
-        j.data.schema.instance = self.instance
         j.data.bcdb.db_start(
             self.instance,
             adminsecret=self.config.data["secret_"],

@@ -2,6 +2,8 @@ import os
 import sys
 from js9 import j
 import imp
+from redis.connection import ConnectionError
+
 
 TEMPLATE = """
 host = "127.0.0.1"
@@ -87,19 +89,25 @@ class GedisClient(JSConfigBase):
         self.models = Models()
         self.cmds = CmdsBase()
         self.cmds_meta = {}
+        self._connected = True
 
-        # LOW LEVEL AT THIS TIME BUT TO SHOW SOMETHING
-        cmds_meta =self.redis.execute_command("system.api_meta")
-        cmds_meta = j.data.serializer.msgpack.loads(cmds_meta)
+        try:
+            # LOW LEVEL AT THIS TIME BUT TO SHOW SOMETHING
+            cmds_meta =self.redis.execute_command("system.api_meta")
+            cmds_meta = j.data.serializer.msgpack.loads(cmds_meta)
 
-        self.namespace = cmds_meta["namespace"]
-        for namespace_full, capnpbin in cmds_meta["cmds"].items():
-            shortname = namespace_full.split(".")[-1]
-            if not shortname.startswith("model"):
-                self.cmds_meta[namespace_full] = j.servers.gedis2.cmds_get(
-                    namespace_full,
-                    capnpbin
-                ).cmds
+            self.namespace = cmds_meta["namespace"]
+            for namespace_full, capnpbin in cmds_meta["cmds"].items():
+                shortname = namespace_full.split(".")[-1]
+                if not shortname.startswith("model"):
+                    self.cmds_meta[namespace_full] = j.servers.gedis2.cmds_get(
+                        namespace_full,
+                        capnpbin
+                    ).cmds
+        except ConnectionError:
+            self.logger.error('Connection error')
+            self._connected  = False
+            return
 
         # this will make sure we have all the local schemas
         schemas_meta = self.redis.execute_command("system.core_schemas_get")

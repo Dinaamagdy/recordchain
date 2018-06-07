@@ -40,12 +40,13 @@ class GedisClientFactory(JSConfigBase):
         data={}
     ):
         client = super(GedisClientFactory, self).get(instance=instance, data=data)
-        cl = GedisClientCmds()
-        cl._client = client
-        cl.models = client.models
-        cl.__dict__.update(cl._client.cmds.__dict__)
-        j.clients.gedis2.latest = self
-        return cl
+        if client._connected:
+            cl = GedisClientCmds()
+            cl._client = client
+            cl.models = client.models
+            cl.__dict__.update(cl._client.cmds.__dict__)
+            j.clients.gedis2.latest = self
+            return cl
 
     def configure(
         self,

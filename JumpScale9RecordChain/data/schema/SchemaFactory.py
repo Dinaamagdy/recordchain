@@ -32,6 +32,7 @@ class SchemaFactory(JSBASE):
         # application directory
         # apps_dir/{instance}
 
+
         if hasattr( j.servers.gedis2, 'latest'):
             self.app_dir = os.path.join(
                 apps_dir,
