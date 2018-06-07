@@ -1,11 +1,8 @@
-
 from js9 import j
-import inspect
 import imp
 
-import os
-
 JSBASE = j.application.jsbase_get_class()
+
 
 class GedisCmd(JSBASE):
     def __init__(self,cmds,cmd):
@@ -22,7 +19,10 @@ class GedisCmd(JSBASE):
                 url=cmd.schema_in.strip("!").strip()
                 self.schema_in = j.data.schema.schema_from_url(url)
             else:        
-                self.schema_in=j.data.schema.schema_from_text(cmd.schema_in,url=self.namespace+".%s.in"%cmd.name)
+                self.schema_in = j.data.schema.schema_from_text(
+                    cmd.schema_in,
+                    url=self.namespace+ ".%s.in" % cmd.name
+                )
             self.schema_in.objclass
         else:
             self.schema_in = None
@@ -32,15 +32,14 @@ class GedisCmd(JSBASE):
                 url=cmd.schema_out.strip("!").strip()
                 self.schema_out = j.data.schema.schema_from_url(url)
             else:
-                self.schema_out = j.data.schema.schema_from_text(cmd.schema_out,url=self.namespace+".%s.out"%cmd.name)
+                self.schema_out = j.data.schema.schema_from_text(
+                    cmd.schema_out,
+                    url=self.namespace + ".%s.out" %cmd.name
+                )
             self.schema_out.objclass     
         else:
             self.schema_out = None
-
-        self._method = None 
-
-        # print(self.code_runtime)
-
+        self._method = None
 
 
     @property
@@ -55,16 +54,14 @@ class GedisCmd(JSBASE):
             out= ""
             for prop in  self.schema_in.properties:
                 d=prop.default_as_python_code
-                # if d=="":
-                #     d = None
-                out += "%s=%s, "%(prop.name,d)            
+                out += "%s=%s, "%(prop.name,d)
             out = out.rstrip().rstrip(",").rstrip()
             out += ",schema_out=None"
             return out
 
     @property
     def args_client(self):
-        if self.schema_in==None:
+        if self.schema_in is None:
             if self.cmdobj.args.strip() == "":
                 return ""
             return ","+self.cmdobj.args
@@ -73,11 +70,9 @@ class GedisCmd(JSBASE):
                 return ""
             else:
                 out = ","
-            for prop in  self.schema_in.properties:
+            for prop in self.schema_in.properties:
                 d=prop.default_as_python_code
-                # if d=="":
-                #     d = None
-                out += "%s=%s, "%(prop.name,d)            
+                out += "%s=%s, "%(prop.name,d)
             out = out.rstrip().rstrip(",").rstrip().rstrip(",")
             return out            
 

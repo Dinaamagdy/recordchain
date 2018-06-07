@@ -221,7 +221,7 @@ class Schema(JSBASE):
     def objclass(self):
         if self._obj_class is None:
             url = self.url.replace(".","_")
-            path = j.data.schema.code_generation_dir + "%s.py" % url
+            path = os.path.join(j.data.schema.code_generation_dir, "%s.py" % url)
             j.sal.fs.writeFile(path,self.code)
             m=imp.load_source(name="url", pathname=path)
             self._obj_class = m.ModelOBJ

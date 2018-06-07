@@ -15,26 +15,51 @@ sh install.sh
 
 ### Code Generations Path
 
-**By default you will find code generated under `/opt/var/codegen/gedis`**
-
-- Example For instance called `test` you'll find code under
-    - /opt/var/codegen/gedis/{test}/server
-    -  /opt/var/codegen/gedis/{test}/client
-    -  /opt/var/codegen/gedis/{test}/schema
 
 ### Server
 
-- **Start** *(In Tmux)*
+- *Generated server code is by default in : `gedis2/apps/{instance}/server`*
+
+**Configuration**
+- Sample config
 
     ```
-    j.servers.gedis2.start(instance="test", schema_path="/opt/code/github/rivine/recordchain/JumpScale9RecordChain/servers/gedis2/EXAMPLE/", background=True)
+    host = "localhost"
+    port = 9900
+    secret_ = ""
+    apps_dir = ""
     ```
 
-- **Args**
-   - *instance*: instance name
-   - *schema_path*: dir containing `schema.toml`
+- `apps_dir`
+    - the directory containing all gedis2 apps
+    - if left empty, default is `gedis2/apps/{instance}`
 
-### client
+
+**Start** *(In Tmux)*
+
+    ```
+    x = j.servers.gedis2.get('example')
+    x.start()
+    ```
+
+    OR
+
+    ```
+    server = j.servers.gedis2.configure(
+        instance="example",
+        port=5000,
+        host="127.0.0.1",
+        secret="",
+        apps_dir=apps_dir
+    )
+
+    server.start()
+    ```
+
+
+## client
+
+*Generated client code is by default in : `gedis2/apps/{instance}/client`*
 
 **Configuration**
 
@@ -69,24 +94,16 @@ sh install.sh
         port=5000,
         password="",
         ssl=True,
-        ssl_certfile=None
+        ssl_cert_file=None
     )
 
     In [7]: cl.system.ping()
     Out[7]: b'PONG'
     ```
 
-### Tests
+**Tests**
 
-**CLient**
-```
-j.clients.gedis2.test()
-
-```
-
-**Server**
-
-```
-j.servers.gedis2.test()
-
-```
+- *Run client tests using*
+    ```
+    j.clients.gedis2.test()
+    ```

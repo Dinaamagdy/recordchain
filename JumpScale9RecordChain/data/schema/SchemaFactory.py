@@ -15,17 +15,43 @@ class SchemaFactory(JSBASE):
         self._template_engine = None
         self.db = j.clients.redis.core_get()
         self.schemas = {}
-        self.instance = None
+        self.code_generation_dir = self.scaffold()
 
-    @property
-    def code_generation_dir(self):
-        path =j.dirs.VARDIR + "/" + "/codegen" + "/" + "gedis" + "/" + (self.instance or '') + '/' + 'schema' + '/'
-        j.sal.fs.createDir(path)
-        if path not in sys.path:
-            sys.path.append(path)
-        j.sal.fs.touch(path + "/__init__.py")
-        self.logger.debug("codegendir:%s" % path)
-        return path
+    def scaffold(self):
+        apps_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            'apps'
+        )
+
+        if not j.sal.fs.exists(apps_dir):
+            j.sal.fs.createDir(apps_dir)
+
+        if not apps_dir in sys.path:
+            sys.path.append(apps_dir)
+
+        # application directory
+        # apps_dir/{instance}
+        self.app_dir = os.path.join(
+            apps_dir,
+            j.servers.gedis2.latest.instance or ''
+        )
+
+        j.sal.fs.touch(os.path.join(self.app_dir, '/__init__.py'))
+
+        if not j.sal.fs.exists(self.app_dir):
+            j.sal.fs.createDir(self.app_dir)
+
+        # create schema dir
+        # apps_dir/{instance}/schema
+        p = os.path.join(self.app_dir, 'schema')
+        if not j.sal.fs.exists(p):
+            j.sal.fs.createDir(p)
+
+        if not p in sys.path:
+            sys.path.append(p)
+
+        j.sal.fs.touch(os.path.join(p, '/__init__.py'))
+        return p
 
     def reset(self):
         self.schemas = {}

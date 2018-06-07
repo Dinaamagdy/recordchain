@@ -14,7 +14,13 @@ class GedisCmds(JSBASE):
     all commands captured in a capnp object, which can be stored in redis or any other keyvaluestor
     """
     
-    def __init__(self,server=None, namespace="", class_=None,capnpbin=None):
+    def __init__(
+        self,
+        server=None,
+        namespace='',
+        class_=None,
+        capnpbin=None
+    ):
         JSBASE.__init__(self)
 
         self.server = server
@@ -132,9 +138,6 @@ class GedisCmds(JSBASE):
             raise RuntimeError()
         return j.data.text.strip(code),j.data.text.strip(comment),j.data.text.strip(schema_in),\
             j.data.text.strip(schema_out),j.data.text.strip(args)
-            
 
     def method_exists(self,name):    
         return name in self.children
-    
-            
