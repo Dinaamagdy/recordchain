@@ -43,6 +43,7 @@ class GedisClient(JSConfigBase):
             interactive=interactive
         )
 
+
         apps_dir = self.config.data['apps_dir']
 
         if not apps_dir:

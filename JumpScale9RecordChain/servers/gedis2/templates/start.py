@@ -5,20 +5,20 @@ from js9 import j
 apps_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 server = j.servers.gedis2.configure(
-    instance="instance",
-    port=5000,
-    host="127.0.0.1",
-    secret="",
+    instance="{{instance}}",
+    port={{config.port}},
+    host="{{config.host}}",
+    secret="{{config.secret_}}",
     apps_dir=apps_dir
 )
 
 server.start()
 
 client = j.clients.gedis2.configure(
-    instance="instance",
-    host="127.0.0.1",
-    port=5000,
-    secret="",
+    instance="{{instance}}",
+    host="{{config.host}}",
+    port={{config.port}},
+    secret="{{config.secret_}}",
     apps_dir=apps_dir,
     ssl=True,
     ssl_cert_file=""

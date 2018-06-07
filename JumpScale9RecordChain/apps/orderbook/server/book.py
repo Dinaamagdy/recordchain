@@ -12,7 +12,7 @@ class Wallet():
         self.jwt = ""    
     
 
-class orderbook(JSBASE):
+class book(JSBASE):
     
     def __init__(self):
         JSBASE.__init__(self)

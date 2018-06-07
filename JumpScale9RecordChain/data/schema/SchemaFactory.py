@@ -31,10 +31,19 @@ class SchemaFactory(JSBASE):
 
         # application directory
         # apps_dir/{instance}
-        self.app_dir = os.path.join(
-            apps_dir,
-            j.servers.gedis2.latest.instance or ''
-        )
+
+        if hasattr( j.servers.gedis2, 'latest'):
+            self.app_dir = os.path.join(
+                apps_dir,
+                j.servers.gedis2.latest.instance or ''
+            )
+        elif hasattr( j.servers.gedis2, 'latest'):
+            self.app_dir = os.path.join(
+                apps_dir,
+                j.clients.gedis2.latest.instance
+            )
+        else:
+            self.app_dir = apps_dir
 
         j.sal.fs.touch(os.path.join(self.app_dir, '/__init__.py'))
 

@@ -1,20 +1,25 @@
+import os
 
 from js9 import j
 
-reset = False
-serverinstance = "orderbook"
-server=j.servers.gedis2.get(serverinstance)
+apps_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-#create backend database, use same admin secret as the server 
-j.data.bcdb.db_start("orderbook",adminsecret=server.config.data["adminsecret_"],reset=reset)
-db=j.data.bcdb.get("orderbook")
+server = j.servers.gedis2.configure(
+    instance="orderbook",
+    port=9900,
+    host="localhost",
+    secret="",
+    apps_dir=apps_dir
+)
 
-db.tables_get() #will get it from current path
-server.db = db
-#tables are now in db.tables as dict
+server.start()
 
-server.generate(reset=True)
-
-server.init()
-
-server.start(schema_path="")
+client = j.clients.gedis2.configure(
+    instance="orderbook",
+    host="localhost",
+    port=9900,
+    secret="",
+    apps_dir=apps_dir,
+    ssl=True,
+    ssl_cert_file=""
+)

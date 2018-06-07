@@ -18,6 +18,7 @@ class GedisFactory(JSConfigBase):
         self._template_engine = None    
         self._template_code_server = None
         self._code_model_template = None
+        self._code_start_template = None
 
     def get(
         self,
@@ -77,3 +78,9 @@ class GedisFactory(JSConfigBase):
         if self._code_model_template is None:
             self._code_model_template = self.template_engine.get_template("ModelBase.py")
         return self._code_model_template        
+
+    @property
+    def code_start_template(self):
+        if self._code_start_template is None:
+            self._code_start_template = self.template_engine.get_template("start.py")
+        return self._code_start_template
