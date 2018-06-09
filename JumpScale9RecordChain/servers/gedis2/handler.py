@@ -67,12 +67,11 @@ class Handler(object):
                     else:
                         result = cmd.method(**params)
                 except Exception as e:
-
                     eco = j.errorhandler.parsePythonExceptionObject(e)
                     msg = str(eco)
                     msg += "\nCODE:%s:%s\n" % (cmd.namespace, cmd.name)
                     self.logger.error(msg)
-                    response.error(msg)
+                    response.error(e.args[0].reason)
                     continue
 
                 self.logger.debug("Callback done and result {} , type {}".format(result, type(result)))

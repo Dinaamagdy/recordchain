@@ -67,10 +67,10 @@ class GedisClient(JSConfigBase):
             instance
         )
 
-        # j.sal.fs.touch(os.path.join(self.app_dir, '/__init__.py'))
-        #
-        # if not j.sal.fs.exists(self.app_dir):
-        #     j.sal.fs.createDir(self.app_dir)
+        j.sal.fs.touch(os.path.join(self.app_dir, '/__init__.py'))
+
+        if not j.sal.fs.exists(self.app_dir):
+            j.sal.fs.createDir(self.app_dir)
 
         # Create server dir
         # apps_dir/{instance}/client

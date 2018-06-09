@@ -70,8 +70,7 @@ class ResponseWriter(object):
 
     def error(self, msg):
         """Send an error."""
-        data = ['-', str(msg), "\r\n"]
-        self._write("".join(data))
+        self._write("-ERR %s\r\n" % str(msg))
 
     def _bulk(self, value):
         """Send part of a multiline reply."""

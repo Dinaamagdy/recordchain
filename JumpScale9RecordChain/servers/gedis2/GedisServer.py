@@ -1,5 +1,6 @@
 import sys
 import os
+from types import ModuleType
 from js9 import j
 import signal
 import gevent
@@ -42,6 +43,9 @@ class GedisServer(StreamServer, JSConfigBase):
 
         # Set proper instance for j.data.schema
 
+        # Cache holds all global variables that needs
+        # i,e in orderbook 'orders'
+        self.globals = {}
 
         self.db = None
         self._sig_handler = []
@@ -97,10 +101,10 @@ class GedisServer(StreamServer, JSConfigBase):
             instance
         )
 
-        # j.sal.fs.touch(os.path.join(self.app_dir, '/__init__.py'))
-        #
-        # if not j.sal.fs.exists(self.app_dir):
-        #     j.sal.fs.createDir(self.app_dir)
+        j.sal.fs.touch(os.path.join(self.app_dir, '/__init__.py'))
+
+        if not j.sal.fs.exists(self.app_dir):
+            j.sal.fs.createDir(self.app_dir)
 
         # Create server dir
         # apps_dir/{instance}/server
@@ -222,11 +226,11 @@ class GedisServer(StreamServer, JSConfigBase):
         if path is not None:
             classname = j.sal.fs.getBaseName(path).split(".", 1)[0]
             dname = j.sal.fs.getDirName(path)
+            old_paths = sys.path
             if dname not in sys.path:
                 sys.path.append(dname)
             exec("from %s import %s" % (classname, classname))
             class_ = eval(classname)
-
         self.cmds_meta[namespace] = GedisCmds(self, namespace=namespace, class_=class_)
         self.classes[namespace] =class_()
 

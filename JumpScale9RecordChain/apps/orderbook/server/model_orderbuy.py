@@ -17,9 +17,6 @@ secret = "" (S)             # the optional secret to use when doing a buy order,
 owner_email_addr = (S)      # email addr used through IYO when order was created
 
 
-
-
-
 """
 
 class model_orderbuy(JSBASE):
