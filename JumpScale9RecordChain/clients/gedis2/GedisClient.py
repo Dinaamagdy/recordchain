@@ -67,10 +67,10 @@ class GedisClient(JSConfigBase):
             instance
         )
 
-        j.sal.fs.touch(os.path.join(self.app_dir, '/__init__.py'))
-
-        if not j.sal.fs.exists(self.app_dir):
-            j.sal.fs.createDir(self.app_dir)
+        # j.sal.fs.touch(os.path.join(self.app_dir, '/__init__.py'))
+        #
+        # if not j.sal.fs.exists(self.app_dir):
+        #     j.sal.fs.createDir(self.app_dir)
 
         # Create server dir
         # apps_dir/{instance}/client
@@ -90,6 +90,18 @@ class GedisClient(JSConfigBase):
         self.cmds = CmdsBase()
         self.cmds_meta = {}
         self._connected = True
+
+
+        # this will make sure we have all the local schemas
+        schemas_meta = self.redis.execute_command("system.core_schemas_get")
+        schemas_meta = j.data.serializer.msgpack.loads(schemas_meta)
+        for key,txt in schemas_meta.items():
+            if key not in j.data.schema.schemas:
+                j.data.schema.schema_from_text(txt,url=key)
+
+        schema_urls = self.redis.execute_command("system.schema_urls")
+        self.schema_urls = j.data.serializer.msgpack.loads(schema_urls)
+
         try:
             # LOW LEVEL AT THIS TIME BUT TO SHOW SOMETHING
             cmds_meta =self.redis.execute_command("system.api_meta")
@@ -106,16 +118,6 @@ class GedisClient(JSConfigBase):
             self.logger.error('Connection error')
             self._connected  = False
             return
-
-        # this will make sure we have all the local schemas
-        schemas_meta = self.redis.execute_command("system.core_schemas_get")
-        schemas_meta = j.data.serializer.msgpack.loads(schemas_meta)
-        for key,txt in schemas_meta.items():
-            if key not in j.data.schema.schemas:
-                j.data.schema.schema_from_text(txt,url=key)
-
-        schema_urls = self.redis.execute_command("system.schema_urls")
-        self.schema_urls = j.data.serializer.msgpack.loads(schema_urls)
 
         self.generate()
 

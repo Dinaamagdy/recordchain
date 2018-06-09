@@ -12,13 +12,12 @@ class Wallet():
         self.jwt = ""    
     
 
-class model_book(JSBASE):
+class orderbook(JSBASE):
     
     def __init__(self):
         JSBASE.__init__(self)
         self.wallet= None
         self.orders = [] #TODO:*1 needs to be put on e.g. server  (WRONG)
-
 
 
     def wallet_register(self,addr,jwt,ipaddr,schema_out):
