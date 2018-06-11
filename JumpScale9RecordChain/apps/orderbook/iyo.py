@@ -7,7 +7,6 @@ s = requests.session()
 
 class Iyo(object):
     def verify(self, jwt):
-        import ipdb; ipdb.set_trace()
         try:
             claims = get_unverified_claims(jwt)
         except jose.exceptions.JWTError:
