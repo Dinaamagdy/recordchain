@@ -1,3 +1,4 @@
+import inspect
 from js9 import j
 
 from .protocol import CommandParser, ResponseWriter
@@ -29,12 +30,12 @@ class Handler(object):
                 redis_cmd = cmd.decode("utf-8").lower()
                 cmd, err = self.get_command(redis_cmd)
                 params = None  # CMD params
-
                 if err:
                     response.error(err)
                     continue
 
                 if cmd.schema_in:
+                    params = {}
 
                     if len(request) < 2:
                         response.error("need to have arguments, none given")
@@ -43,16 +44,30 @@ class Handler(object):
                     if len(request) > 2:
                         response.error("more than 1 argument given, needs to be binary capnp message or json")
                         continue
-                    o = cmd.schema_in.get(capnpbin=request[1])
-                    params = o.ddict
 
-                    if "id" in params:
-                        params.pop("id")
+                    cmd_vars =inspect.getargspec(cmd.method).args[1:] # remove self
 
                     if cmd.schema_out:
                         params["schema_out"] = cmd.schema_out
+                        cmd_vars.pop(-1)
+
+                    o = cmd.schema_in.get(capnpbin=request[1])
+                    schema_dict = o.ddict
+                    if "id" in schema_dict:
+                        schema_dict.pop("id")
+
+                    # arguments passed are same number as in_schema provided
+                    if len(cmd_vars) == len(schema_dict):
+                        params.update(schema_dict)
+                    elif len(cmd_vars) == 1:
+                        params[cmd_vars[0]] = o
+                    else:
+                        params.update(schema_dict)
                 else:
-                    if len(request) > 1:
+                    if len(request) == 1:
+                        if cmd.schema_out:
+                            params = {"schema_out": cmd.schema_out}
+                    elif len(request) > 1:
                         params = request[1:]
 
                 # execute command callback
@@ -71,8 +86,9 @@ class Handler(object):
                     msg = str(eco)
                     msg += "\nCODE:%s:%s\n" % (cmd.namespace, cmd.name)
                     self.logger.error(msg)
-                    response.error(e.args[0].reason)
+                    response.error(e.args[:100])
                     continue
+
 
                 self.logger.debug("Callback done and result {} , type {}".format(result, type(result)))
 

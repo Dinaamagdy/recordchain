@@ -174,6 +174,8 @@ class ModelOBJ():
         {% if prop.js9type.NAME == "jsobject" %}
         d["{{prop.name}}"] = self.{{prop.alias}}.ddict
         {% else %}
+        v = self.{{prop.alias}}
+
         d["{{prop.name}}"] = self.{{prop.alias}}
         {% endif %}    
         {% endfor %}
@@ -184,6 +186,10 @@ class ModelOBJ():
         {% endfor %}
         if self.id is not None:
             d["id"]=self.id
+
+        for k,v in d.items():
+            if d[k] == b'':
+                d[k]=v.decode('utf-8')
         return d
 
     @property

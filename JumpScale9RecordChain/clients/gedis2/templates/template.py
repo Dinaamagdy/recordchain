@@ -18,7 +18,7 @@ class CMDS():
     {% for name,cmd in obj.cmds.items() %}
 
 
-    def {{name}}(self{{cmd.args_client}}):
+    def {{name}}(self{{cmd.args_client if cmd.args_client.strip() != ",schema_out" else ""}}):
         {% if cmd.comment != "" %}
         '''
 {{cmd.comment_indent2}}

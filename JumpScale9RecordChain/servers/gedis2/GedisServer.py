@@ -1,6 +1,6 @@
 import sys
 import os
-from types import ModuleType
+import imp
 from js9 import j
 import signal
 import gevent
@@ -21,6 +21,9 @@ TEMPLATE = """
     apps_dir = ""
     """
 
+class Models():
+    def __init__(self):
+        pass
 
 class GedisServer(StreamServer, JSConfigBase):
     def __init__(
@@ -46,7 +49,7 @@ class GedisServer(StreamServer, JSConfigBase):
         # Cache holds all global variables that needs
         # i,e in orderbook 'orders'
         self.globals = {}
-
+        self.models = Models()
         self.db = None
         self._sig_handler = []
         self.cmds_meta = {}
@@ -174,6 +177,10 @@ class GedisServer(StreamServer, JSConfigBase):
                 code = j.servers.gedis2.code_model_template.render(obj=table.schema)
                 j.sal.fs.writeFile(dest, code)
             self.schema_urls.append(table.schema.url)
+            schema_name = table.schema.url.replace(".", "_")
+            fname = "model_%s" % schema_name
+            m = imp.load_source(name=fname, pathname=dest)
+            self.models.__dict__[schema_name] = getattr(m, "model_%s" % namespace)()
 
         if reset:
             # Copy start.py
