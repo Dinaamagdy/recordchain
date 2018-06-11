@@ -22,7 +22,7 @@ class BCDBFactory(JSConfigBase):
         s = j.servers.zdb.get(instance=instance)
         data = {}
         data["zdb_adminsecret_"] = s.config.data["adminsecret_"]
-        data["zdb_port"] = s.config.data["port"]
+        data["zdb_port"] = str(s.config.data["port"])
         bcdb = self._child_class(instance=instance, data=data, parent=self, interactive=False)
         bcdb.server = s
         return bcdb

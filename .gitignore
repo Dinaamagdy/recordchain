@@ -111,3 +111,5 @@ example/server/*
 JumpScale9RecordChain/apps/schema/
 JumpScale9RecordChain/apps/orderbook/client/
 JumpScale9RecordChain/apps/orderbook/schema/
+
+JumpScale9RecordChain/apps/*

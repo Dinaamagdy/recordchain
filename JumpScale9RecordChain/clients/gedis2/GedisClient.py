@@ -7,7 +7,7 @@ from redis.connection import ConnectionError
 
 TEMPLATE = """
 host = "127.0.0.1"
-port = 9900
+port = "9900"
 secret_ = ""
 ssl = true
 apps_dir = ""
