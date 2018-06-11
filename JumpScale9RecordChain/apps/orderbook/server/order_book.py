@@ -200,11 +200,11 @@ class order_book(JSBASE):
         ```
         """
         result = schema_out.new()
-
         s = j.data.schema.schema_from_url('threefoldtoken.order.sell')
         for id, order in self.sell_orders.items():
             order = s.get(capnpbin=order.data)
             order.owner_email_addr = ""
+            order.price_min = order.price_min.decode('utf-8')
             result.orders.append(order)
         return result
 
@@ -220,6 +220,7 @@ class order_book(JSBASE):
         for id, order in self.buy_orders.items():
             order = s.get(capnpbin=order.data)
             order.owner_email_addr = ""
+            order.price_min = order.price_min.decode('utf-8')
             result.orders.append(order)
         return result
 
@@ -230,7 +231,6 @@ class order_book(JSBASE):
         ```
         """
         self._check_wallet()
-
         try:
             self.matching_lock.acquire()
             order_id = order.id_to_update
