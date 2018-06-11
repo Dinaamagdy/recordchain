@@ -1,24 +1,13 @@
-## recordchain for python
-
-- gevent redis server
-- blockchain logic
-- zerodb client
-
-
 ### installation
 
-```bash
-js9_code get --url="git@github.com:rivine/recordchain.git"
-cd $HOMEDIR/code/github/rivine/recordchain
-sh install.sh
-```
-
-### Code Generations Path
-
+- Install libssl-dev `apt install libssl-dev`
+- Get recordchain `js9_code get --url="git@github.com:rivine/recordchain.git"`
+- Install recordchain `cd $HOMEDIR/code/github/rivine/recordchain && sh install.sh`
+- Get 0-db `js9_code get --url="git@github.com:rivine/0-db.git"`
+- Install 0-db `cd $HOMEDIR/code/github/rivine/0-db && make && cp bin/zdb /opt/bin/`
 
 ### Server
 
-- *Generated server code is by default in : `gedis2/apps/{instance}/server`*
 
 **Configuration**
 - Sample config
@@ -37,24 +26,20 @@ sh install.sh
 
 **Start** *(In Tmux)*
 
-    ```
-    x = j.servers.gedis2.get('example')
-    x.start()
-    ```
+- Use one of the following:
 
-    OR
-
-    ```
-    server = j.servers.gedis2.configure(
-        instance="example",
-        port=5000,
-        host="127.0.0.1",
-        secret="",
-        apps_dir=apps_dir
-    )
-
-    server.start()
-    ```
+    - `j.servers.gedis2.get('example').start()`
+    -
+        ```
+        server = j.servers.gedis2.configure(
+            instance="example",
+            port=5000,
+            host="127.0.0.1",
+            secret="",
+            apps_dir=apps_dir
+        )
+        server.start()
+        ```
 
 
 ## client
