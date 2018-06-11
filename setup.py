@@ -79,7 +79,6 @@ setup(
         'pyblake2==1.1.2',
         'pycapnp==0.6.3',
         'pyOpenSSL==18.0.0',
-        'sys.path = old_paths',
     ],
     dependency_links=[
         "git+https://github.com/pyca/pynacl"
