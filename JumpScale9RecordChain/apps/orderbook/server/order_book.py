@@ -207,60 +207,67 @@ class order_book(JSBASE):
             order.owner_email_addr = ""
             result.orders.append(order)
         return result
-    #
-    # def list_buy_orders(self):
-    #     result = []
-    #     s = j.data.schema.schema_from_url('threefoldtoken.order.buy')
-    #     for order in self.buy_orders:
-    #         order = s.new().get(capnpbin=order.data)
-    #         order.owner_email_addr = ""
-    #         result.append(order)
-    #     return result
-    #
-    # def update_sell_order(self, id, order, schema_out):
-    #     """
-    #     ```in
-    #     id = (N)
-    #     order = (O) !threefoldtoken.order.sell
-    #     ```
-    #     ```out
-    #     !threefoldtoken.order.sell
-    #     ```
-    #     """
-    #     self._check_wallet()
-    #     try:
-    #         if id in self.sell_orders:
-    #             self.matching_lock.acquire()
-    #             data = j.data.serializer.msgpack.dumps([id, order.data])
-    #             j.servers.gedis2.latest.models.threefoldtoken_order_sell.set(data)
-    #             self.buy_orders[id] = order
-    #             return True
-    #         return False
-    #     finally:
-    #         self.matching_lock.release()
-    #
-    # def update_buy_order(self, id, order, schema_out):
-    #     """
-    #     ```in
-    #     id = (N)
-    #     order = (O) !threefoldtoken.order.buy
-    #     ```
-    #     ```out
-    #     !threefoldtoken.order.buy
-    #     """
-    #     self._check_wallet()
-    #     try:
-    #         if id in self.buy_orders:
-    #             self.matching_lock.acquire()
-    #             data = j.data.serializer.msgpack.dumps([id, order.data])
-    #             j.servers.gedis2.latest.models.threefoldtoken_order_buy.set(data)
-    #             self.buy_orders[id] = order
-    #             return True
-    #         return False
-    #     finally:
-    #         self.matching_lock.release()
+
+    def list_buy_orders(self, schema_out):
+        """
+        ```out
+        orders = (LO) !threefoldtoken.order.sell
+        ```
+        """
+        result = schema_out.new()
+
+        s = j.data.schema.schema_from_url('threefoldtoken.order.buy')
+        for id, order in self.buy_orders.items():
+            order = s.get(capnpbin=order.data)
+            order.owner_email_addr = ""
+            result.orders.append(order)
+        return result
+
+    def update_sell_order(self, order):
+        """"
+        ```in
+        !threefoldtoken.order.sell
+        ```
+        """
+        self._check_wallet()
+
+        try:
+            self.matching_lock.acquire()
+            order_id = order.id_to_update
+            if order_id in self.sell_orders:
+                old_order = self.sell_orders[order_id]
+                if old_order.owner_email_addr == self.wallet.email:
+                    data = j.data.serializer.msgpack.dumps([order_id, order.data])
+                    j.servers.gedis2.latest.models.threefoldtoken_order_buy.set(data)
+                    self.sell_orders[order_id] = order
+                    return True
+            return False
+        finally:
+            self.matching_lock.release()
+
+    def update_buy_order(self, order):
+        """
+        ```in
+        !threefoldtoken.order.buy
+        ```
+        """
+        self._check_wallet()
+
+        try:
+            order_id = order.id_to_update
+            self.matching_lock.acquire()
+            if order_id in self.buy_orders:
+
+                old_order = self.buy_orders[order_id]
+                if old_order.owner_email_addr == self.wallet.email:
+                    data = j.data.serializer.msgpack.dumps([order_id, order.data])
+                    j.servers.gedis2.latest.models.threefoldtoken_order_buy.set(data)
+                    self.buy_orders[order_id] = order
+                    return True
+            return False
+        finally:
+            self.matching_lock.release()
 
     def order_buy_match(self,order_id, schema_out):
         self._check_wallet()
         pass
-

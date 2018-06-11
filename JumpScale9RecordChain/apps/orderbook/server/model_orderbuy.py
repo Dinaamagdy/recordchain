@@ -15,6 +15,7 @@ expiration =  (D)           # can be defined as e.g. +1h
 buy_from = (LS)             # list of wallet addresses which I want to buy from
 secret = "" (S)             # the optional secret to use when doing a buy order, only relevant when buy_from used
 owner_email_addr = (S)      # email addr used through IYO when order was created
+id_to_update = 0 (I)
 
 
 """

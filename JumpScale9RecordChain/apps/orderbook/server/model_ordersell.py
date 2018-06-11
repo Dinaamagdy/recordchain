@@ -15,6 +15,7 @@ expiration =  (D)           # can be defined as e.g. +1h
 sell_to = (LS)              # list of wallet addresses which are allowed to buy from me
 secret = (LS)               # if used the buyers need to have one of the secrets 
 owner_email_addr = (S)      # email addr used through IYO when order was created
+id_to_update = 0 (I)
 
 
 """
