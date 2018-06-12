@@ -6,89 +6,71 @@
 - Get 0-db `js9_code get --url="git@github.com:rivine/0-db.git"`
 - Install 0-db `cd $HOMEDIR/code/github/rivine/0-db && make && cp bin/zdb /opt/bin/`
 
-### Server
+### Running
 
+**example**
 
-**Configuration**
-- Sample config
+- Run server `j.servers.gedis2.get('example').run()`
+- Get client `j.clients.gedis2.get('example')`
+- execute command
+    ```
+    In [8]: x.system.ping()
+    Out[8]: b'PONG'
 
     ```
-    host = "localhost"
-    port = 9900
-    secret_ = ""
-    apps_dir = ""
+
+
+**orderbook**
+- Run server `j.servers.gedis2.get('orderbook').run()`
+- Get client `j.clients.gedis2.get('orderbook')`
+- execute command
+    ```
+    In [8]: x.system.ping()
+    Out[8]: b'PONG'
     ```
 
-- `apps_dir`
-    - the directory containing all gedis2 apps
-    - if left empty, default is `gedis2/apps/{instance}`
+**Tests**
+- `python3 apps/example/test.py`
+- `j.clients.gedis2.test()`
+- `j.servers.gedis2.test()`
 
+### Explanation
 
-**Start** *(In Tmux)*
+- **Gedis-server**:
 
-- Use one of the following:
+    ```
+    is a Redis-protocol compatible framework  allowing you to build apps/servers
+    on top of it that exposes a Redis protocol interface
+    That says, you can connect to your app using any redis client
+    It allows you to register your own redis commands and logic, then expose it
+    ```
 
-    - `j.servers.gedis2.get('example').start()`
-    -
-        ```
-        server = j.servers.gedis2.configure(
+- **Make your own app**
+    ```
+    app = j.servers.get(instance='my_app')
+    app.start()
+    ```
+
+    OR configure it directly like
+
+    ```
+    server = j.servers.gedis2.configure(
             instance="example",
             port=5000,
             host="127.0.0.1",
             secret="",
-            apps_dir=apps_dir
+            apps_dir=''
         )
-        server.start()
-        ```
 
-
-## client
-
-*Generated client code is by default in : `gedis2/apps/{instance}/client`*
-
-**Configuration**
-
-- Sample config
-
-    ```
-    addr = 'localhost'
-    password_ = ''
-    port = 5000
-    ssl = true
-    ssl_cert_file = ''
+    server.start()
     ```
 
-- SSL support
-    - Gedis2 Server by default generates cert file in `/opt/var/codegen/{namespace}/ca.crt`
-    - Enable SSL for client by setting `ssl = true`
-    - Certificate file is taken from `ssl_cert_file` if not empty, otherwise `/opt/var/codegen/{namespace}/ca.crt`
+- **Server configuration**
+    - `apps_dir` when empty, your app is created under `recordchain/apps/{app_name}`
+    - This allows you to see all code generated in your IDE and debug code easily
+    - change `apps_dir` to any other location if you want apps else where
 
-**Get Gedis2 client**
+- **Gedis-client**
 
-  - *Use configuration from config file*
-    ```
-    In [6]: cl = j.clients.gedis2.get(instance='test')
-    In [7]: cl.redis.execute_command('system.ping')
-    Out[7]: b'PONG'
-    ```
-  - *Provide your own configuration on the fly*
-    ```
-    cl = j.clients.gedis2.configure(
-        instance="test",
-        ipaddr="localhost",
-        port=5000,
-        password="",
-        ssl=True,
-        ssl_cert_file=None
-    )
-
-    In [7]: cl.system.ping()
-    Out[7]: b'PONG'
-    ```
-
-**Tests**
-
-- *Run client tests using*
-    ```
-    j.clients.gedis2.test()
-    ```
+- You can use any redis library to connect to your app and execute commands
+- or you use the client from jumpscale
