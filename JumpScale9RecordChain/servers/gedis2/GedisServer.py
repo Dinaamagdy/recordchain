@@ -150,17 +150,18 @@ class GedisServer(StreamServer, JSConfigBase):
             self.cmds_add(namespace, path=item)
         self._inited = True
 
-    def _start(self, reset=False):
+    def _start(self, db=None, reset=False):
 
-        j.data.bcdb.db_start(
-            self.instance,
-            adminsecret=self.config.data["secret_"],
-            reset=reset
-        )
-        db = j.data.bcdb.get(self.instance)
-        db.tables_get(
-            os.path.dirname(self.server_path)
-        )
+        if not db:
+            j.data.bcdb.db_start(
+                self.instance,
+                adminsecret=self.config.data["secret_"],
+                reset=reset
+            )
+            db = j.data.bcdb.get(self.instance)
+            db.tables_get(
+                os.path.dirname(self.server_path)
+            )
 
         self.db = db
 
@@ -181,6 +182,8 @@ class GedisServer(StreamServer, JSConfigBase):
             fname = "model_%s" % schema_name
             m = imp.load_source(name=fname, pathname=dest)
             self.models.__dict__[schema_name] = getattr(m, "model_%s" % namespace)()
+            # Generate schema
+            table.schema.objclass
 
         if reset:
             # Copy start.py
@@ -200,7 +203,7 @@ class GedisServer(StreamServer, JSConfigBase):
 
         self.server.serve_forever()
 
-    def start(self, reset=False):
+    def start(self, db=None, reset=False):
         cmd = "js9 'x=j.servers.gedis2.get(instance=\"%s\");x._start(reset=%s)'" % (self.instance, reset)
         j.tools.tmux.execute(
             cmd,
@@ -238,6 +241,7 @@ class GedisServer(StreamServer, JSConfigBase):
                 sys.path.append(dname)
             exec("from %s import %s" % (classname, classname))
             class_ = eval(classname)
+
         self.cmds_meta[namespace] = GedisCmds(self, namespace=namespace, class_=class_)
         self.classes[namespace] =class_()
 

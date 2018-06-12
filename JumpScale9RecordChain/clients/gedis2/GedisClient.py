@@ -45,6 +45,7 @@ class GedisClient(JSConfigBase):
             interactive=interactive
         )
 
+        j.clients.gedis2.latest = self
 
         apps_dir = self.config.data['apps_dir']
 

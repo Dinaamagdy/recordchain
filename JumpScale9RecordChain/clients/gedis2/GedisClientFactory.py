@@ -45,7 +45,6 @@ class GedisClientFactory(JSConfigBase):
             cl._client = client
             cl.models = client.models
             cl.__dict__.update(cl._client.cmds.__dict__)
-            j.clients.gedis2.latest = self
             return cl
 
     def configure(

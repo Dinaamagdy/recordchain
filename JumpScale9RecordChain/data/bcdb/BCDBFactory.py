@@ -14,7 +14,7 @@ class BCDBFactory(JSConfigBase):
         self.__jslocation__ = "j.data.bcdb"
         super().__init__(child_class=BCDB)
 
-    def db_start(self, instance, adminsecret, port=8888, reset=False):
+    def db_start(self, instance, adminsecret, port='8888', reset=False):
         self.instance_last = instance
         s = j.servers.zdb.configure(instance=instance, port=port, mode="direct", reset=reset, adminsecret=adminsecret, start=True, id_enable=True)
 

@@ -38,7 +38,7 @@ class SchemaFactory(JSBASE):
                 apps_dir,
                 j.servers.gedis2.latest.instance or ''
             )
-        elif hasattr( j.servers.gedis2, 'latest'):
+        elif hasattr( j.clients.gedis2, 'latest'):
             self.app_dir = os.path.join(
                 apps_dir,
                 j.clients.gedis2.latest.instance
