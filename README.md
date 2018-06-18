@@ -11,7 +11,7 @@
 
 **example**
 
-- Run server `j.servers.gedis2.get('example').run()`
+- Run server `j.servers.gedis2.get('example').start()`
 - Get client `j.clients.gedis2.get('example')`
 - execute command
     ```
@@ -22,7 +22,7 @@
 
 
 **orderbook**
-- Run server `j.servers.gedis2.get('orderbook').run()`
+- Run server `j.servers.gedis2.get('orderbook').start()`
 - Get client `j.clients.gedis2.get('orderbook')`
 - execute command
     ```
