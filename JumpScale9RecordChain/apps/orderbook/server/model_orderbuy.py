@@ -5,17 +5,16 @@ from js9 import j
 JSBASE = j.application.jsbase_get_class()
 
 SCHEMA="""
-@url = threefoldtoken.order.buy
+@url = threefoldtoken.order.buy.input
 @name = orderbuy
 comment = ""
 currency_to_buy = "" (S)    # currency types BTC/ETH/XRP/TFT
 currency_mine = (LS)        # which of my currencies I am selling (can be more than 1)
-price_max = 0 (N)            # can be defined in any currency
+price_max = 0 (N)           # can be defined in any currency
 expiration =  (D)           # can be defined as e.g. +1h
 buy_from = (LS)             # list of wallet addresses which I want to buy from
 secret = "" (S)             # the optional secret to use when doing a buy order, only relevant when buy_from used
-owner_email_addr = (S)      # email addr used through IYO when order was created
-id_to_update = 0 (I)
+
 
 
 """
@@ -25,7 +24,7 @@ class model_orderbuy(JSBASE):
     def __init__(self):
         JSBASE.__init__(self)        
         self.namespace = "orderbuy"
-        self.url = "threefoldtoken.order.buy"
+        self.url = "threefoldtoken.order.buy.input"
         self.db = j.servers.gedis2.latest.db
         self.table = self.db.tables["orderbuy"]
         self.schema = self.table.schema

@@ -5,17 +5,16 @@ from js9 import j
 JSBASE = j.application.jsbase_get_class()
 
 SCHEMA="""
-@url = threefoldtoken.order.sell
+@url = threefoldtoken.order.sell.input
 @name = ordersell
 comment = ""
 currency_to_sell = "" (S)   # currency types BTC/ETH/XRP/TFT
-currency_accept = (LS)      # can accept more than one currency 
-price_min = 0 (N)            # can be defined in any currency
+currency_accept = (LS)      # can accept more than one currency
+price_min = 0 (N)           # can be defined in any currency
 expiration =  (D)           # can be defined as e.g. +1h
 sell_to = (LS)              # list of wallet addresses which are allowed to buy from me
-secret = (LS)               # if used the buyers need to have one of the secrets 
-owner_email_addr = (S)      # email addr used through IYO when order was created
-id_to_update = 0 (I)
+secret = (LS)               # if used the buyers need to have one of the secrets
+
 
 
 """
@@ -25,12 +24,13 @@ class model_ordersell(JSBASE):
     def __init__(self):
         JSBASE.__init__(self)        
         self.namespace = "ordersell"
-        self.url = "threefoldtoken.order.sell"
+        self.url = "threefoldtoken.order.sell.input"
         self.db = j.servers.gedis2.latest.db
         self.table = self.db.tables["ordersell"]
         self.schema = self.table.schema
 
     def set(self,data_in):
+        import ipdb; ipdb.set_trace()
         if j.servers.gedis2.latest.serializer:
             #e.g. for json
             ddict = j.servers.gedis2.latest.return_serializer.loads(data_in)

@@ -1,10 +1,10 @@
-import threading
-from orderbook.iyo import Iyo
+from orderbook.lib.orderbook import OrderBook
+from orderbook.lib.cache import Id
 
-import uuid
 from js9 import j
 
 JSBASE = j.application.jsbase_get_class()
+
 
 class order_book(JSBASE):
     """
@@ -13,149 +13,131 @@ class order_book(JSBASE):
     """
     def __init__(self):
         JSBASE.__init__(self)
-        self.wallet = None
-        self.iyo = Iyo()
-        j.servers.gedis2.latest.globals = {
-            'buy_orders': {},
-            'sell_orders':{},
+        self.orderbook = OrderBook()
+        j.servers.gedis2.latest.context = {
             'wallets': {},
-            'buy_orders_idx_lock' : threading.Lock(),
-            'sell_orders_idx_lock': threading.Lock(),
-            'buy_orders_idx' : 0,
-            'sell_orders_idx': 0,
-            'matching_lock': threading.Lock()
+            'sell_orders':{},
+            'buy_orders': {},
+            'sell_orders_id': Id(),
+            'buy_orders_id': Id()
         }
 
-        self.buy_orders = j.servers.gedis2.latest.globals['buy_orders']
-        self.sell_orders = j.servers.gedis2.latest.globals['buy_orders']
-        self.wallets = j.servers.gedis2.latest.globals['wallets']
-
-        self.buy_orders_idx_lock = j.servers.gedis2.latest.globals['buy_orders_idx_lock']
-        self.sell_orders_idx_lock = j.servers.gedis2.latest.globals['sell_orders_idx_lock']
-        self.buy_orders_idx = j.servers.gedis2.latest.globals['buy_orders_idx']
-        self.sell_orders_idx = j.servers.gedis2.latest.globals['sell_orders_idx']
-
-        self.matching_lock = j.servers.gedis2.latest.globals['matching_lock']
-
-    ##################################################
-    # Functions start with _ are not exposed to client
-    ##################################################
-
-    def _check_wallet(self):
-        """
-        Check user is logged in using `wallet_register` command
-        """
-        if not self.wallet:
-            raise RuntimeError('Wallet not registered')
-
-    def _get_id(self, order='sell'):
-        """
-        Get Next Order ID
-        """
-        if order=='sell':
-            lock = self.sell_orders_idx_lock
-        else:
-            lock = self.buy_orders_idx_lock
-
-        try:
-            lock.acquire()
-            if order == 'sell':
-                self.sell_orders_idx += 1
-                return self.sell_orders_idx
-            else:
-                self.buy_orders_idx += 1
-                return self.buy_orders_idx
-        finally:
-            lock.release()
-
-    ########################
-    # EXPOSED API TO client
-    ########################
-
-    def wallet_register(self,addr,jwt,ipaddr,schema_out):
+    def login(self, wallet, schema_out):
         """
         ```in
-        addr = "" (S)
-        jwt = "" (S)  
-        ipaddr = "" (S)
+        !!threefoldtoken.wallet
         ```
+
         ```out
         !threefoldtoken.wallet
         ```
+
+        Verifies JWT and registers user wallet!
+
+        :param jwt: JWT from Itsyouonline
+        :param wallet_addr: Wallet address
+        :param wallet_ipaddr: Wallet Ip address
+        :param schema_out: !threefoldtoken.wallet
+        :return: Wallet
+        :rtype: !threefoldtoken.wallet
         """
-        user = self.iyo.verify(jwt)
+        w = schema_out.new()
+        w.ipaddr = wallet.ipaddr
+        w.addr = wallet.addr
+        w.jwt = wallet.jwt
+        return self.orderbook.wallet.register(w)
 
-        if not user:
-            raise RuntimeError('Invalid JWT')
-
-        self.wallet = schema_out.new()
-        self.wallet.ipaddr = ipaddr
-        self.wallet.addr = addr
-        self.wallet.jwt = jwt
-        self.wallet.email = user['email']
-        return self.wallet
 
     def add_sell_order(self,order):
         """
         ```in
-        !threefoldtoken.order.sell     
+        !threefoldtoken.order.sell.input
         ```
+
+        Add a selling order
+
+        :param order: Selling Order
+        :type order: !threefoldtoken.order.sell
+        :return: Order ID
+        :rtype: int
         """
-        self._check_wallet()
-        order.owner_email_addr = self.wallet.email
-        id = self._get_id(order='sell')
-        data = j.data.serializer.msgpack.dumps([id, order.data])
-        j.servers.gedis2.latest.models.threefoldtoken_order_sell.set(data)
-        self.sell_orders[id] = order
-        return id
+
+        return self.orderbook.sell.add(self.orderbook.wallet.current, order)
 
     def add_buy_order(self,order):
         """
         ```in
-        !threefoldtoken.order.buy     
+        !threefoldtoken.order.buy.input
         ```
+
+        Add a buying order
+
+        :param order: Buying Order
+        :type order: !threefoldtoken.order.buy
+        :return: Order ID
+        :rtype: int
         """
-        self._check_wallet()
-        order.owner_email_addr = self.wallet.email
-        id = self._get_id(order='buy')
-        data = j.data.serializer.msgpack.dumps([id, order.data])
-        j.servers.gedis2.latest.models.threefoldtoken_order_buy.set(data)
-        self.buy_orders[id] = order
-        return id
+        return self.orderbook.buy.add(self.orderbook.wallet.current, order)
+
+    def update_sell_order(self, order):
+        """"
+        ```in
+        !threefoldtoken.order.sell.input
+        ```
+
+        update a selling order
+
+        :param order: Selling Order
+        :type order: !threefoldtoken.order.sell
+        :return: Order ID
+        :rtype: int
+        """
+        return self.orderbook.sell.update(self.orderbook.wallet.current, order)
+
+    def update_buy_order(self, order):
+        """
+        ```in
+        !threefoldtoken.order.buy.input
+        ```
+
+        update a buying order
+
+        :param order: Buying Order
+        :type order: !threefoldtoken.order.buy
+        :return: Order ID
+        :rtype: int
+        """
+        return self.orderbook.buy.update(self.orderbook.wallet.current, order)
 
     def remove_sell_order(self, order_id):
         """
         ```in
         order_id = (I)
         ```
+
+        Remove a selling order
+
+        :param order_id: Selling order id
+        :rtype order_id: int
+        :return: Order ID
+        :rtype int
         """
-        self._check_wallet()
-        try:
-            self.matching_lock.acquire()
-            if order_id in self.sell_orders:
-                if self.sell_orders[order_id].owner_email_addr == self.wallet.email:
-                    self.sell_orders.pop(order_id)
-                    return True
-            return False
-        finally:
-            self.matching_lock.release()
+        return self.orderbook.sell.remove(self.orderbook.wallet.current, order_id)
 
     def remove_buy_order(self, order_id):
         """
         ```in
         order_id = (I)
         ```
+
+        Remove a buying order
+
+        :param order_id: Buying order id
+        :rtype order_id: int
+        :return: Order ID
+        :rtype int
         """
-        self._check_wallet()
-        try:
-            self.matching_lock.acquire()
-            if order_id in self.buy_orders:
-                if self.buy_orders[order_id].owner_email_addr == self.wallet.email:
-                    self.buy_orders.pop(order_id)
-                    return True
-            return False
-        finally:
-            self.matching_lock.release()
+        return self.orderbook.buy.remove(self.orderbook.wallet.current, order_id)
 
     def get_sell_order(self, order_id, schema_out):
         """
@@ -165,15 +147,17 @@ class order_book(JSBASE):
         ```out
         !threefoldtoken.order.sell
         ```
+
+        Get a selling order
+
+        :param order_id: Selling order id
+        :type order_id: int
+        :param schema_out: Order
+        :type schema_out: !threefoldtoken.order.sell
+        :return: order
+        :rtype !threefoldtoken.order.sell
         """
-        self._check_wallet()
-        if order_id in self.sell_orders:
-            order = self.sell_orders[order_id]
-            order = schema_out.get(capnpbin=order.data)
-            if order.owner_email_addr != self.wallet.email:
-                order.owner_email_addr = ""
-            return order
-        raise RuntimeError('not-found')
+        return self.orderbook.sell.get(self.orderbook.wallet.current, order_id)
 
     def get_buy_order(self, order_id, schema_out):
         """
@@ -183,91 +167,56 @@ class order_book(JSBASE):
         ```out
         !threefoldtoken.order.buy
         ```
-        """
-        self._check_wallet()
-        if order_id in self.buy_orders:
-            order = self.buy_orders[order_id]
-            order = schema_out.get(capnpbin=order.data)
-            if order.owner_email_addr != self.wallet.email:
-                order.owner_email_addr = ""
-            return order
-        raise RuntimeError('not-found')
 
-    def list_sell_orders(self, schema_out):
-        """
-        ```out
-        orders = (LO) !threefoldtoken.order.sell
-        ```
-        """
-        result = schema_out.new()
-        s = j.data.schema.schema_from_url('threefoldtoken.order.sell')
-        for id, order in self.sell_orders.items():
-            order = s.get(capnpbin=order.data)
-            order.owner_email_addr = ""
-            order.price_min = order.price_min.decode('utf-8')
-            result.orders.append(order)
-        return result
+        Get a buying order
 
-    def list_buy_orders(self, schema_out):
+        :param order_id: Buying order id
+        :type order_id: int
+        :param schema_out: Order
+        :type schema_out: !threefoldtoken.order.sell
+        :return: order
+        :rtype !threefoldtoken.order.buy
         """
-        ```out
-        orders = (LO) !threefoldtoken.order.sell
-        ```
+        return self.orderbook.buy.get(self.orderbook.wallet.current, order_id)
+
+    def list_sell_orders(self, id='*'):
         """
-        result = schema_out.new()
+        List Selling orders
 
-        s = j.data.schema.schema_from_url('threefoldtoken.order.buy')
-        for id, order in self.buy_orders.items():
-            order = s.get(capnpbin=order.data)
-            order.owner_email_addr = ""
-            order.price_min = order.price_min.decode('utf-8')
-            result.orders.append(order)
-        return result
+        :return: list of selling orders
+        :rtype: list
+        """
+        return self.orderbook.sell.list(self.orderbook.wallet.current, id=id)
 
-    def update_sell_order(self, order):
-        """"
+    def list_buy_orders(self):
+        """
+        :return: list of buying orders
+        :rtype: list
+        """
+        return self.orderbook.buy.list(self.orderbook.wallet.current)
+
+    def filter_sell_orders(self, **kwargs):
+        """
         ```in
         !threefoldtoken.order.sell
         ```
-        """
-        self._check_wallet()
-        try:
-            self.matching_lock.acquire()
-            order_id = order.id_to_update
-            if order_id in self.sell_orders:
-                old_order = self.sell_orders[order_id]
-                if old_order.owner_email_addr == self.wallet.email:
-                    data = j.data.serializer.msgpack.dumps([order_id, order.data])
-                    j.servers.gedis2.latest.models.threefoldtoken_order_buy.set(data)
-                    self.sell_orders[order_id] = order
-                    return True
-            return False
-        finally:
-            self.matching_lock.release()
 
-    def update_buy_order(self, order):
+        Filter Selling orders
+
+        :param order: Selling Order
+        :type order: !threefoldtoken.order.sell
+        """
+        return self.orderbook.sell.list(self.orderbook.wallet.current, **kwargs)
+
+    def filter_buy_orders(self, **kwargs):
         """
         ```in
         !threefoldtoken.order.buy
         ```
+
+        Filter buying orders
+
+        :param order: Buying Order
+        :type order: !threefoldtoken.order.buy
         """
-        self._check_wallet()
-
-        try:
-            order_id = order.id_to_update
-            self.matching_lock.acquire()
-            if order_id in self.buy_orders:
-
-                old_order = self.buy_orders[order_id]
-                if old_order.owner_email_addr == self.wallet.email:
-                    data = j.data.serializer.msgpack.dumps([order_id, order.data])
-                    j.servers.gedis2.latest.models.threefoldtoken_order_buy.set(data)
-                    self.buy_orders[order_id] = order
-                    return True
-            return False
-        finally:
-            self.matching_lock.release()
-
-    def order_buy_match(self,order_id, schema_out):
-        self._check_wallet()
-        pass
+        return self.orderbook.buy.list(self.orderbook.wallet.current, **kwargs)

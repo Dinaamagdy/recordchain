@@ -70,11 +70,12 @@ class GedisCmd(JSBASE):
                 return ""
             else:
                 out = ","
-            for prop in self.schema_in.properties:
+            for prop in self.schema_in.properties + self.schema_in.lists:
                 d=prop.default_as_python_code
                 out += "%s=%s, "%(prop.name,d)
             out = out.rstrip().rstrip(",").rstrip().rstrip(",")
-            return out            
+            out += ",id=''"
+            return out
 
     @property
     def code_indent(self):

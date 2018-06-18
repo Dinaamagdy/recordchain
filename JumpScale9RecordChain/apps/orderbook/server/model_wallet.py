@@ -7,10 +7,11 @@ JSBASE = j.application.jsbase_get_class()
 SCHEMA="""
 @url = threefoldtoken.wallet
 @name = wallet
+jwt = "" (S)                # JWT Token
 addr = ""                   # Address
 ipaddr = (ipaddr)           # IP Address
-jwt = "" (S)                # JWT Token
 email = "" (S)              # Email address
+username = "" (S)           # User name
 
 
 """

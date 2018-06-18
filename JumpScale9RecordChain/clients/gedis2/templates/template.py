@@ -29,9 +29,11 @@ class CMDS():
         #schema in exists
         schema_in = self._cmds["{{name}}"].schema_in
         args = schema_in.new()
-        {% for prop in cmd.schema_in.properties %}
+        {% for prop in cmd.schema_in.properties + cmd.schema_in.lists %}
         args.{{prop.name}} = {{prop.name}}
         {% endfor %}
+
+        args.id=id
 
         res = self._redis.execute_command("{{obj.cmds_name_lower}}.{{name}}",args.data)
 

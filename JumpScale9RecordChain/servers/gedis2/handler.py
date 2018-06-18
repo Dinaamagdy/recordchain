@@ -53,8 +53,7 @@ class Handler(object):
 
                     o = cmd.schema_in.get(capnpbin=request[1])
                     schema_dict = o.ddict
-                    if "id" in schema_dict:
-                        schema_dict.pop("id")
+
 
                     # arguments passed are same number as in_schema provided
                     if len(cmd_vars) == len(schema_dict):
