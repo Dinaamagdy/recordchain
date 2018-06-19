@@ -10,8 +10,8 @@ class OrderBook(object):
 
     wallet = Wallet()
 
-    @is_logged_in
     @property
+    @is_logged_in
     def buy(self):
         return OrderBuy
 
