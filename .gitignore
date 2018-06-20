@@ -109,4 +109,5 @@ client
 client/*
 schema/*
 server/model_*
+model_*.py
 
