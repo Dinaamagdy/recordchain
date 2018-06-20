@@ -66,7 +66,7 @@ class order_book(JSBASE):
     def add_buy_order(self,order):
         """
         ```in
-        !threefoldtoken.order.buy.input
+        !threefoldtoken.order.buy.create
         ```
 
         Add a buying order
@@ -96,7 +96,7 @@ class order_book(JSBASE):
     def update_buy_order(self, order):
         """
         ```in
-        !threefoldtoken.order.buy.input
+        !threefoldtoken.order.buy.update
         ```
 
         update a buying order
@@ -178,44 +178,28 @@ class order_book(JSBASE):
         """
         return self.orderbook.buy.get(self.orderbook.wallet.current, order_id)
 
-    def list_sell_orders(self, id='*'):
+    def list_sell_orders(self, sortby, desc):
         """
-        List Selling orders
+        ```in
+            sortby = (S) # Field name to sort with
+            desc = (B) # Descending order
+        ```
 
+        List Selling orders
         :return: list of selling orders
         :rtype: list
         """
-        return self.orderbook.sell.list(self.orderbook.wallet.current, id=id)
+        return self.orderbook.sell.list(self.orderbook.wallet.current, sortby=sortby, desc=desc)
 
-    def list_buy_orders(self):
+    def list_buy_orders(self, sortby, desc):
         """
-        :return: list of buying orders
+        ```in
+            sortby = (S) # Field name to sort with
+            desc = (B) # Descending order
+        ```
+
+        List Selling orders
+        :return: list of selling orders
         :rtype: list
         """
-        return self.orderbook.buy.list(self.orderbook.wallet.current)
-
-    def filter_sell_orders(self, **kwargs):
-        """
-        ```in
-        !threefoldtoken.order.sell
-        ```
-
-        Filter Selling orders
-
-        :param order: Selling Order
-        :type order: !threefoldtoken.order.sell
-        """
-        return self.orderbook.sell.list(self.orderbook.wallet.current, **kwargs)
-
-    def filter_buy_orders(self, **kwargs):
-        """
-        ```in
-        !threefoldtoken.order.buy
-        ```
-
-        Filter buying orders
-
-        :param order: Buying Order
-        :type order: !threefoldtoken.order.buy
-        """
-        return self.orderbook.buy.list(self.orderbook.wallet.current, **kwargs)
+        return self.orderbook.buy.list(self.orderbook.wallet.current, sortby=sortby, desc=desc)
