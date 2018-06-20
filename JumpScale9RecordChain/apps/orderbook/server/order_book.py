@@ -47,11 +47,10 @@ class order_book(JSBASE):
         w.jwt = wallet.jwt
         return self.orderbook.wallet.register(w)
 
-
     def add_sell_order(self,order):
         """
         ```in
-        !threefoldtoken.order.sell.input
+        !threefoldtoken.order.sell.create
         ```
 
         Add a selling order
@@ -82,7 +81,7 @@ class order_book(JSBASE):
     def update_sell_order(self, order):
         """"
         ```in
-        !threefoldtoken.order.sell.input
+        !threefoldtoken.order.sell.update
         ```
 
         update a selling order

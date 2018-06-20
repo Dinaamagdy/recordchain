@@ -117,9 +117,6 @@ class Schema(JSBASE):
             if alias[-1]=="*":
                 alias=alias[:-1]
 
-            if propname in ["id"]:
-                raise RuntimeError("do not use 'id' in your schema, is reserved for system.")
-
             return (propname, alias, js9type, defvalue, comment, pointer_type)
 
         nr = 0
