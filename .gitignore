@@ -15,7 +15,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+
 lib64/
 parts/
 sdist/
@@ -112,4 +112,3 @@ JumpScale9RecordChain/apps/schema/
 JumpScale9RecordChain/apps/orderbook/client/
 JumpScale9RecordChain/apps/orderbook/schema/
 
-JumpScale9RecordChain/apps/*
