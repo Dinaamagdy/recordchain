@@ -74,23 +74,31 @@ class OrderSell(object):
             raise RuntimeError('not found')
 
     @classmethod
-    def list(cls, wallet, id='*'):
+    def list(cls, wallet, sortby='price_min', desc=False):
         """
         List / Filter Sell order in current user wallet
 
+        :param sortby: field to sort with
+        :type sortby: str
+        :param desc: Descending order
+        :type desc: bool
         :param wallet: Cuurent wallet
         :type wallet: !threefoldtoken.wallet
         :return: List of Sell orders
         :rtype: list
         """
-        cached_orders = orders = list(j.servers.gedis2.latest.context['sell_orders'].values())
+        res = []
 
-        if id != '*':
-            res = j.servers.gedis2.latest.db.tables['ordersell'].find(id=id)
-            return [o for o in res if o.id in orders and o.wallet_addr == wallet.addr]
+        for k, v in j.servers.gedis2.latest.context['sell_orders'].items():
+            if v.wallet_addr == wallet.addr:
+                res.append(v)
+        if not sortby:
+            res.sort(reverse=desc)
         else:
-            res= [o.ddict for o in cached_orders if o.wallet_addr == wallet.addr]
-            return res
+            def sort_func(order):
+                return getattr(order, '%s_usd'%sortby)
+            res.sort(key=sort_func, reverse=desc)
+        return [o.ddict_hr for o in res]
 
     @classmethod
     def get(cls, wallet, id):

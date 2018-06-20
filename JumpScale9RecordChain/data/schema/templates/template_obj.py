@@ -27,7 +27,6 @@ class ModelOBJ():
 
         self._JSOBJ = True
 
-        self.id = None
         self.changed_prop_permanent = False
         {% for prop in obj.properties %}
         {% if prop.js9type.NAME == "jsobject" %}
@@ -184,8 +183,6 @@ class ModelOBJ():
         #check if the list has the right type
         d["{{prop.name}}"] = self.{{prop.alias}}.pylist
         {% endfor %}
-        if self.id is not None:
-            d["id"]=self.id
 
         for k,v in d.items():
             if d[k] == b'':
@@ -212,8 +209,7 @@ class ModelOBJ():
         else:
             d["{{prop.name}}"] = self.{{prop.alias}}.pylist
         {% endfor %}
-        if self.id is not None:
-            d["id"]=self.id
+
         return d
 
     @property

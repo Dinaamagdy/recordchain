@@ -74,7 +74,6 @@ class GedisCmd(JSBASE):
                 d=prop.default_as_python_code
                 out += "%s=%s, "%(prop.name,d)
             out = out.rstrip().rstrip(",").rstrip().rstrip(",")
-            out += ",id=''"
             return out
 
     @property

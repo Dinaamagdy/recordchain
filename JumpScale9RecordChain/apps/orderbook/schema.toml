@@ -1,3 +1,4 @@
+# Sell Order
 @url = threefoldtoken.order.sell
 @name = ordersell
 comment = ""
@@ -10,7 +11,8 @@ secret = (LS)               # if used the buyers need to have one of the secrets
 owner_email_addr = (S)      # email addr used through IYO when order was created
 wallet_addr = (S)           # Wallet address
 
-@url = threefoldtoken.order.sell.input
+# Sell Order Create Schema
+@url = threefoldtoken.order.sell.create
 @name = ordersellinput
 comment = ""
 currency_to_sell = "" (S)   # currency types BTC/ETH/XRP/TFT
@@ -20,7 +22,19 @@ expiration =  (D)           # can be defined as e.g. +1h
 sell_to = (LS)              # list of wallet addresses which are allowed to buy from me
 secret = (LS)               # if used the buyers need to have one of the secrets
 
+# Sell Order Update Schema
+@url = threefoldtoken.order.sell.update
+comment = ""
+@name = ordersellinput
+id = (I)                    # Object ID
+currency_to_sell = "" (S)   # currency types BTC/ETH/XRP/TFT
+currency_accept = (LS)      # can accept more than one currency
+price_min =  (N)            # can be defined in any currency
+expiration =  (D)           # can be defined as e.g. +1h
+sell_to = (LS)              # list of wallet addresses which are allowed to buy from me
+secret = (LS)               # if used the buyers need to have one of the secrets
 
+# Buy Order
 @url = threefoldtoken.order.buy
 @name = orderbuy
 comment = ""
@@ -33,9 +47,22 @@ secret = "" (S)             # the optional secret to use when doing a buy order,
 owner_email_addr = (S)      # email addr used through IYO when order was created
 wallet_addr = (S)           # Wallet address
 
-@url = threefoldtoken.order.buy.input
+# Buy Order Create Schema
+@url = threefoldtoken.order.buy.create
 @name = orderbuyinput
 comment = ""
+currency_to_buy = "" (S)    # currency types BTC/ETH/XRP/TFT
+currency_mine = (LS)        # which of my currencies I am selling (can be more than 1)
+price_max = 0 (N)           # can be defined in any currency
+expiration =  (D)           # can be defined as e.g. +1h
+buy_from = (LS)             # list of wallet addresses which I want to buy from
+secret = "" (S)             # the optional secret to use when doing a buy order, only relevant when buy_from used
+
+# Buy Order Update Schema
+@url = threefoldtoken.order.buy.update
+comment = ""
+@name = orderbuyinput
+id = (I)                    # Object ID
 currency_to_buy = "" (S)    # currency types BTC/ETH/XRP/TFT
 currency_mine = (LS)        # which of my currencies I am selling (can be more than 1)
 price_max = 0 (N)           # can be defined in any currency

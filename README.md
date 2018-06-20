@@ -29,6 +29,7 @@
     In [8]: x.system.ping()
     Out[8]: b'PONG'
     ```
+- [More info](./JumpScale9RecordChain/apps/orderbook/README.md)
 
 **Tests**
 - `python3 apps/example/test.py`

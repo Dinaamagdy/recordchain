@@ -33,8 +33,6 @@ class CMDS():
         args.{{prop.name}} = {{prop.name}}
         {% endfor %}
 
-        args.id=id
-
         res = self._redis.execute_command("{{obj.cmds_name_lower}}.{{name}}",args.data)
 
         {% else %}  
