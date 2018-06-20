@@ -16,7 +16,7 @@ class OrderBuy(object):
         order.owner_email_addr = wallet.email
         order.wallet_addr = wallet.addr
 
-        id = j.servers.gedis2.latest.context['buy_orders'].get()
+        id = j.servers.gedis2.latest.context['buy_orders_id'].get()
 
         j.servers.gedis2.latest.db.tables['orderbuy'].set(id=id, data=order.data)
 
