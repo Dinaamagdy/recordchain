@@ -81,8 +81,6 @@ class {{obj.name}}():
             ddict = self._cobj.to_dict()
 
             if self.changed_list:
-                # print("cobj")
-                pass
                 {% for prop in obj.lists %}
                 if self.{{prop.alias}}._copied:
                     #means the list was modified

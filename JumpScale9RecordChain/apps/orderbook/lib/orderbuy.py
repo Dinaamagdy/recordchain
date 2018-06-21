@@ -14,19 +14,19 @@ class OrderBuy(object):
         :return: Order ID
         :rtype: int
         """
-        order = j.data.schema.schema_from_url('threefoldtoken.order.buy').get(capnpbin=order.data)
-        order.owner_email_addr = wallet.email
-        order.wallet_addr = wallet.addr
-
+        o = j.data.schema.schema_from_url('threefoldtoken.order.buy').new()
+        o.copy_from(order)
+        o.owner_email_addr = wallet.email
+        o.wallet_addr = wallet.addr
         id = j.servers.gedis2.latest.context['buy_orders_id'].get()
-        order.id = id
-        j.servers.gedis2.latest.db.tables['orderbuy'].set(id=id, data=order.data)
+        o.id = id
+        j.servers.gedis2.latest.db.tables['orderbuy'].set(id=id, data=o.data)
 
         # You can add data to db also using
         # data = j.data.serializer.msgpack.dumps([id, order.data])
         # j.servers.gedis2.latest.models.threefoldtoken_order_buy.set(data)
 
-        j.servers.gedis2.latest.context['buy_orders'][id] = order
+        j.servers.gedis2.latest.context['buy_orders'][id] = o
         return id
 
     @staticmethod

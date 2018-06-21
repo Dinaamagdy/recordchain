@@ -158,6 +158,20 @@ class ModelOBJ():
             self._cobj=self.cobj.as_builder()
             return self.cobj.to_bytes_packed()
 
+    def copy_from(self, obj):
+        """
+        Passed a Schema object, copy all properties and lists into current one
+        This is useful when dealing with objects with similar schemas
+        so we need to copy contents of passed object to current empty object
+        """
+        for item in [x.name for x in obj.schema.properties]:
+            setattr(self, item, getattr(obj, item))
+
+        for item in [x.name for x in obj.schema.lists]:
+            l = getattr(self, item)
+            for i in getattr(obj, item):
+                l.append(i)
+
     def changed_reset(self):
         if self.changed_prop_permanent:
             return
