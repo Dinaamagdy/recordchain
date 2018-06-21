@@ -74,7 +74,7 @@ class OrderBuy(object):
             raise RuntimeError('not found')
 
     @classmethod
-    def list(cls, wallet, sortby='price_max', desc=False):
+    def list(cls, wallet=None, sortby='price_max', desc=False):
         """
         List / Filter Buy orders
         If wallet is provided, get user orders only

@@ -75,7 +75,7 @@ class OrderSell(object):
             raise RuntimeError('not found')
 
     @classmethod
-    def list(cls, wallet, sortby='price_min', desc=False):
+    def list(cls, wallet=None, sortby='price_min', desc=False):
         """
         List / Filter Sell order in current user wallet
         If wallet is provided, get user orders only
