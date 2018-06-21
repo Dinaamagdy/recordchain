@@ -19,7 +19,7 @@ class OrderSell(object):
         order.wallet_addr = wallet.addr
 
         id = j.servers.gedis2.latest.context['sell_orders_id'].get()
-
+        order.id = id
         j.servers.gedis2.latest.db.tables['ordersell'].set(id=id, data=order.data)
 
         # You can add data to db also using
@@ -93,7 +93,7 @@ class OrderSell(object):
             if v.wallet_addr == wallet.addr:
                 res.append(v)
         if not sortby:
-            res.sort(reverse=desc)
+            res.sort(key=lambda x: x.id, reverse=desc)
         else:
             def sort_func(order):
                 return getattr(order, '%s_usd'%sortby)

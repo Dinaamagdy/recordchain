@@ -108,6 +108,6 @@ schema
 client
 client/*
 schema/*
-server/model_*
+server/model_*.py
 model_*.py
-
+JumpScale9RecordChain/apps/example/server/

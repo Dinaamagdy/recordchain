@@ -40,6 +40,9 @@ class ModelOBJ():
         {% endif %} 
         {% endfor %}
 
+        if not hasattr(self, 'id'):
+            self.id = None
+
 
     {# generate the properties #}
     {% for prop in obj.properties %}
@@ -184,6 +187,9 @@ class ModelOBJ():
         d["{{prop.name}}"] = self.{{prop.alias}}.pylist
         {% endfor %}
 
+        if self.id is not None:
+            d["id"] = self.id
+
         for k,v in d.items():
             if d[k] == b'':
                 d[k]=v.decode('utf-8')
@@ -209,6 +215,9 @@ class ModelOBJ():
         else:
             d["{{prop.name}}"] = self.{{prop.alias}}.pylist
         {% endfor %}
+
+        if self.id is not None:
+            d["id"] = self.id
 
         return d
 
