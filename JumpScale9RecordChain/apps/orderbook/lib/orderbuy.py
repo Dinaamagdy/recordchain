@@ -14,6 +14,7 @@ class OrderBuy(object):
         :return: Order ID
         :rtype: int
         """
+        order = j.data.schema.schema_from_url('threefoldtoken.order.buy').get(capnpbin=order.data)
         order.owner_email_addr = wallet.email
         order.wallet_addr = wallet.addr
 
