@@ -1,10 +1,23 @@
 
 from js9 import j
+from json import loads
+from orderbook.lib.orderbuy import OrderBuy
+from orderbook.lib.ordersell import OrderSell
+import gevent
 
 JSBASE = j.application.jsbase_get_class()
 
 
-class Matcher(JSBASE):
+class Matcher(JSBASE,):
+    
+    def run(self):
+        while(True):
+            gevent.sleep(20)
+            self.logger.info("Matching started")
+            sell_list = OrderSell().list(wallet=None)
+            buy_list = OrderBuy().list(wallet=None)
+            self.match(sell_list, buy_list)
+
     def match(self, sell_list, buy_list):
         """ matching sell orders with buy orders and generating commands for trader
         it will match using price time priority Algorithm which means
@@ -29,7 +42,7 @@ class Matcher(JSBASE):
             while not fulfillled:
                 if len(sell_list) > current_sell_index: 
                     sell_order = sell_list[current_sell_index]
-                    if sell_order['price_min'] <= buy_order['price_max']:
+                    if sell_order['price_min_usd'] <= buy_order['price_max_usd']:
                         trade_amount = 0
                         if sell_order['amount'] == buy_order['amount']:
                             trade_amount = sell_order['amount']
@@ -162,4 +175,4 @@ class Matcher(JSBASE):
             print("BUY\t {}\t {}".format(buy_order['amount'], buy_order['price_max']))
 
 if __name__ == "__main__":
-    Matcher().test()
+    Matcher('test').test()

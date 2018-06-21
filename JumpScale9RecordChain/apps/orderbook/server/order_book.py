@@ -1,7 +1,9 @@
 from orderbook.lib.orderbook import OrderBook
 from orderbook.lib.cache import Id
-
+from orderbook.lib.matcher import Matcher
+import gevent 
 from js9 import j
+
 
 JSBASE = j.application.jsbase_get_class()
 
@@ -21,8 +23,10 @@ class order_book(JSBASE):
                 'sell_orders':{},
                 'buy_orders': {},
                 'sell_orders_id': Id(),
-                'buy_orders_id': Id()
+                'buy_orders_id': Id(),
+                'matcher': Matcher()
             }
+            gevent.spawn(j.servers.gedis2.latest.context['matcher'].run)
 
     def login(self, wallet, schema_out):
         """
