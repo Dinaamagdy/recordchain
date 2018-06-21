@@ -15,18 +15,19 @@ class OrderSell(object):
         :return: Order ID
         :rtype: int
         """
-        order = j.data.schema.schema_from_url('threefoldtoken.order.sell').get(capnpbin=order.data)
-        order.owner_email_addr = wallet.email
-        order.wallet_addr = wallet.addr
+        o = j.data.schema.schema_from_url('threefoldtoken.order.sell').new()
+        o.copy_from(order)
+        o.owner_email_addr = wallet.email
+        o.wallet_addr = wallet.addr
         id = j.servers.gedis2.latest.context['sell_orders_id'].get()
-        order.id = id
-        j.servers.gedis2.latest.db.tables['ordersell'].set(id=id, data=order.data)
+        o.id = id
+        j.servers.gedis2.latest.db.tables['ordersell'].set(id=id, data=o.data)
 
         # You can add data to db also using
         # data = j.data.serializer.msgpack.dumps([id, order.data])
         # j.servers.gedis2.latest.models.threefoldtoken_order_sell.set(data)
 
-        j.servers.gedis2.latest.context['sell_orders'][id] = order
+        j.servers.gedis2.latest.context['sell_orders'][id] = o
         return id
 
     @staticmethod
@@ -109,16 +110,7 @@ class OrderSell(object):
                 return getattr(order, '%s_usd'%sortby)
             orders.sort(key=sort_func, reverse=desc)
 
-        res = []
-
-        for order in orders:
-            d = order.ddict_hr
-            if wallet is None:
-                d['owner_email_addr'] = ''
-                d['wallet_addr'] = ''
-            res.append(d)
-
-        return res
+        return orders
 
     @classmethod
     def get(cls, wallet, id):

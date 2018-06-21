@@ -32,6 +32,9 @@ class CMDS():
         {% for prop in cmd.schema_in.properties + cmd.schema_in.lists %}
         {% if prop.js9type.NAME == 'numeric'%}
         args.{{prop.name}} = j.data.types.numeric.clean({{prop.name}})
+        {% elif prop.js9type.NAME == 'list' %}
+        for item in {{prop.name}}:
+            args.{{prop.name}}.append(item)
         {% else %}
         args.{{prop.name}} = {{prop.name}}
         {% endif %}

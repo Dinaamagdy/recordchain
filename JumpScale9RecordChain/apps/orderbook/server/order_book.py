@@ -195,7 +195,7 @@ class order_book(JSBASE):
         :return: list of selling orders
         :rtype: list
         """
-        return self.orderbook.sell.list(self.orderbook.wallet.current, sortby=sortby, desc=desc)
+        return [order.ddict_hr for order in self.orderbook.sell.list(self.orderbook.wallet.current, sortby=sortby, desc=desc)]
 
     def list_my_buy_orders(self, sortby, desc):
         """
@@ -208,7 +208,7 @@ class order_book(JSBASE):
         :return: list of buying orders
         :rtype: list
         """
-        return self.orderbook.buy.list(self.orderbook.wallet.current, sortby=sortby, desc=desc)
+        return [order.ddict_hr for order in self.orderbook.buy.list(self.orderbook.wallet.current, sortby=sortby, desc=desc)]
 
     def list_all_sell_orders(self, sortby, desc):
         """
@@ -221,7 +221,14 @@ class order_book(JSBASE):
         :return: list of selling orders
         :rtype: list
         """
-        return self.orderbook.sell.list(None, sortby=sortby, desc=desc)
+        res = []
+
+        for order in self.orderbook.sell.list(None, sortby=sortby, desc=desc):
+            item = order.ddict_hr
+            item['owner_email_addr'] = ''
+            item['wallet_addr'] = ''
+            res.append(item)
+        return res
 
     def list_all_buy_orders(self, sortby, desc):
         """
@@ -234,4 +241,11 @@ class order_book(JSBASE):
         :return: list of buying orders
         :rtype: list
         """
-        return self.orderbook.buy.list(None, sortby=sortby, desc=desc)
+        res = []
+
+        for order in self.orderbook.buy.list(None, sortby=sortby, desc=desc):
+            item = order.ddict_hr
+            item['owner_email_addr'] = ''
+            item['wallet_addr'] = ''
+            res.append(item)
+        return res
