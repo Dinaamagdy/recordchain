@@ -73,9 +73,11 @@ class OrderBuy(object):
             raise RuntimeError('not found')
 
     @classmethod
-    def list(cls, wallet, sortby='price_min', desc=False):
+    def list(cls, wallet, sortby='price_max', desc=False):
         """
-        List / Filter Buy order in current user wallet
+        List / Filter Buy orders
+        If wallet is provided, get user orders only
+        If wallet is None, retrieve all orders
 
         :param wallet: Cuurent wallet
         :type wallet: !threefoldtoken.wallet
@@ -86,19 +88,33 @@ class OrderBuy(object):
         :return: List of buy orders
         :rtype: list
         """
-        res = []
+        orders = []
 
         for k, v in j.servers.gedis2.latest.context['buy_orders'].items():
-            if v.wallet_addr == wallet.addr:
-                res.append(v)
+            if wallet is not None:
+                if v.wallet_addr == wallet.addr:
+                    orders.append(v)
+            else:
+                orders.append(v)
+
         if not sortby:
-            res.sort(key=lambda x: x.id, reverse=desc)
+            orders.sort(key=lambda x: x.id, reverse=desc)
         else:
             def sort_func(order):
                 return getattr(order, '%s_usd' % sortby)
 
-            res.sort(key=sort_func, reverse=desc)
-        return [o.ddict_hr for o in res]
+            orders.sort(key=sort_func, reverse=desc)
+
+        res = []
+
+        for order in orders:
+            d = order.ddict_hr
+            if wallet is None:
+                d['owner_email_addr'] = ''
+                d['wallet_addr'] = ''
+            res.append(d)
+
+        return res
 
     @classmethod
     def get(cls, wallet, id):

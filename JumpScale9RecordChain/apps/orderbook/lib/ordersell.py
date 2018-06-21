@@ -15,9 +15,9 @@ class OrderSell(object):
         :return: Order ID
         :rtype: int
         """
+        order = j.data.schema.schema_from_url('threefoldtoken.order.sell').get(capnpbin=order.data)
         order.owner_email_addr = wallet.email
         order.wallet_addr = wallet.addr
-
         id = j.servers.gedis2.latest.context['sell_orders_id'].get()
         order.id = id
         j.servers.gedis2.latest.db.tables['ordersell'].set(id=id, data=order.data)
@@ -40,6 +40,7 @@ class OrderSell(object):
         :type wallet: !threefoldtoken.wallet
         """
         if order.id in j.servers.gedis2.latest.context['sell_orders']:
+            order = j.data.schema.schema_from_url('threefoldtoken.order.sell').get(capnpbin=order.data)
             old_order = j.servers.gedis2.latest.context['sell_orders'][order.id]
 
             if old_order.wallet_addr != wallet.addr:
@@ -77,28 +78,47 @@ class OrderSell(object):
     def list(cls, wallet, sortby='price_min', desc=False):
         """
         List / Filter Sell order in current user wallet
+        If wallet is provided, get user orders only
+        If wallet is None, retrieve all orders
 
+        :param wallet: Cuurent wallet
+        :type wallet: !threefoldtoken.wallet
         :param sortby: field to sort with
         :type sortby: str
         :param desc: Descending order
         :type desc: bool
-        :param wallet: Cuurent wallet
-        :type wallet: !threefoldtoken.wallet
+        :param exclude_wallet_data: exclude wallet info
+        :type exclude_wallet_data: bool
+
         :return: List of Sell orders
         :rtype: list
         """
-        res = []
+        orders = []
 
         for k, v in j.servers.gedis2.latest.context['sell_orders'].items():
-            if v.wallet_addr == wallet.addr:
-                res.append(v)
+            if wallet is not None:
+                if v.wallet_addr == wallet.addr:
+                    orders.append(v)
+            else:
+                orders.append(v)
+
         if not sortby:
-            res.sort(key=lambda x: x.id, reverse=desc)
+            orders.sort(key=lambda x: x.id, reverse=desc)
         else:
             def sort_func(order):
                 return getattr(order, '%s_usd'%sortby)
-            res.sort(key=sort_func, reverse=desc)
-        return [o.ddict_hr for o in res]
+            orders.sort(key=sort_func, reverse=desc)
+
+        res = []
+
+        for order in orders:
+            d = order.ddict_hr
+            if wallet is None:
+                d['owner_email_addr'] = ''
+                d['wallet_addr'] = ''
+            res.append(d)
+
+        return res
 
     @classmethod
     def get(cls, wallet, id):

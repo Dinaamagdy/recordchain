@@ -180,20 +180,33 @@ class order_book(JSBASE):
         """
         return self.orderbook.buy.get(self.orderbook.wallet.current, order_id)
 
-    def list_sell_orders(self, sortby, desc):
+    def list_my_sell_orders(self, sortby, desc):
         """
         ```in
             sortby = (S) # Field name to sort with
             desc = (B) # Descending order
         ```
 
-        List Selling orders
+        List Selling orders for current client only
         :return: list of selling orders
         :rtype: list
         """
         return self.orderbook.sell.list(self.orderbook.wallet.current, sortby=sortby, desc=desc)
 
-    def list_buy_orders(self, sortby, desc):
+    def list_my_buy_orders(self, sortby, desc):
+        """
+        ```in
+            sortby = (S) # Field name to sort with
+            desc = (B) # Descending order
+        ```
+
+        List Buy orders for current client only
+        :return: list of buying orders
+        :rtype: list
+        """
+        return self.orderbook.buy.list(self.orderbook.wallet.current, sortby=sortby, desc=desc)
+
+    def list_all_sell_orders(self, sortby, desc):
         """
         ```in
             sortby = (S) # Field name to sort with
@@ -204,4 +217,17 @@ class order_book(JSBASE):
         :return: list of selling orders
         :rtype: list
         """
-        return self.orderbook.buy.list(self.orderbook.wallet.current, sortby=sortby, desc=desc)
+        return self.orderbook.sell.list(None, sortby=sortby, desc=desc)
+
+    def list_all_buy_orders(self, sortby, desc):
+        """
+        ```in
+            sortby = (S) # Field name to sort with
+            desc = (B) # Descending order
+        ```
+
+        List Buy orders
+        :return: list of buying orders
+        :rtype: list
+        """
+        return self.orderbook.buy.list(None, sortby=sortby, desc=desc)
