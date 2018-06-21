@@ -30,7 +30,11 @@ class CMDS():
         schema_in = self._cmds["{{name}}"].schema_in
         args = schema_in.new()
         {% for prop in cmd.schema_in.properties + cmd.schema_in.lists %}
+        {% if prop.js9type.NAME == 'numeric'%}
+        args.{{prop.name}} = j.data.types.numeric.clean({{prop.name}})
+        {% else %}
         args.{{prop.name}} = {{prop.name}}
+        {% endif %}
         {% endfor %}
 
         res = self._redis.execute_command("{{obj.cmds_name_lower}}.{{name}}",args.data)
