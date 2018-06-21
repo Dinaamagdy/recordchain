@@ -14,13 +14,15 @@ class order_book(JSBASE):
     def __init__(self):
         JSBASE.__init__(self)
         self.orderbook = OrderBook()
-        j.servers.gedis2.latest.context = {
-            'wallets': {},
-            'sell_orders':{},
-            'buy_orders': {},
-            'sell_orders_id': Id(),
-            'buy_orders_id': Id()
-        }
+
+        if 'context' not in j.servers.gedis2.latest:
+            j.servers.gedis2.latest.context = {
+                'wallets': {},
+                'sell_orders':{},
+                'buy_orders': {},
+                'sell_orders_id': Id(),
+                'buy_orders_id': Id()
+            }
 
     def login(self, wallet, schema_out):
         """

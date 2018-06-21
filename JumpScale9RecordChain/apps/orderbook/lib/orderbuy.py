@@ -1,5 +1,6 @@
 from js9 import j
 
+
 class OrderBuy(object):
     @classmethod
     def add(cls, wallet, order):
