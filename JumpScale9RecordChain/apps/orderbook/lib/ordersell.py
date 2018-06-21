@@ -110,16 +110,7 @@ class OrderSell(object):
                 return getattr(order, '%s_usd'%sortby)
             orders.sort(key=sort_func, reverse=desc)
 
-        res = []
-
-        for order in orders:
-            d = order.ddict_hr
-            if wallet is None:
-                d['owner_email_addr'] = ''
-                d['wallet_addr'] = ''
-            res.append(d)
-
-        return res
+        return orders
 
     @classmethod
     def get(cls, wallet, id):
