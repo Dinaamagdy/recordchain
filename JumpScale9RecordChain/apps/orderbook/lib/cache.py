@@ -13,6 +13,6 @@ class Id(object):
         return idx
 
     def _populate(self, start_from, count=10000):
-        for i in range(start_from, count+1):
+        for i in range(start_from, start_from+count):
             self.queue.put(i)
 
