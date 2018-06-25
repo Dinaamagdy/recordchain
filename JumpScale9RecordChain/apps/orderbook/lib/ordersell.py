@@ -46,6 +46,8 @@ class OrderSell(object):
 
             if old_order.wallet_addr != wallet.addr:
                 raise RuntimeError('Not authorized')
+            if old_order.approved:
+                raise RuntimeError('Order is locked. No more updates are possible')
 
             order.owner_email_addr = wallet.email
             order.wallet_addr = wallet.addr
@@ -70,6 +72,8 @@ class OrderSell(object):
             order = j.servers.gedis2.latest.context['sell_orders'][id]
             if order.wallet_addr != wallet.addr:
                 raise RuntimeError('Not authorized')
+            if order.approved:
+                raise RuntimeError('Order is locked. can not be deleted')
             j.servers.gedis2.latest.context['sell_orders'].pop(id)
             return id
         else:
