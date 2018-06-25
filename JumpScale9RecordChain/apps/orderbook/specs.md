@@ -4,6 +4,9 @@
 - An order book is a ledger containing all pending orders [buy/sell]
 - these orders are paired up as soon as their requirements are fulfilled.
 - A transaction is issued with each match
+- When adding/editing an order, if `approved` field is set to True
+no further updates or deletes to this order is possible, and order is
+scheduled for matching
 
 ## Needed APIs
 Create order  
@@ -16,7 +19,7 @@ Trading
 # Goal
 - implement an orderbook server(on top of gedis2 server)
 - Orders are saved in memory and committed to db for history only
-- 
+
 # Deliverables
 - Order book server using gedis2 with SSL support
 - Python client for orderbook
