@@ -1,171 +1,157 @@
 
 from js9 import j
 from json import loads
+import cryptocompare
 from orderbook.lib.orderbuy import OrderBuy
 from orderbook.lib.ordersell import OrderSell
 import gevent
 
 JSBASE = j.application.jsbase_get_class()
-
+Numeric = j.data.types.numeric
+Date = j.data.types.date
 
 class Matcher(JSBASE,):
     
     def run(self):
+        """starts matching every 5 seconds
+        this should be spawned by gevent
+        
+        """
+
         while(True):
-            gevent.sleep(20)
+            gevent.sleep(5)
             self.logger.info("Matching started")
             sell_list = OrderSell().list(wallet=None)
             buy_list = OrderBuy().list(wallet=None)
             self.match(sell_list, buy_list)
 
     def match(self, sell_list, buy_list):
-        """ matching sell orders with buy orders and generating commands for trader
-        it will match using price time priority Algorithm which means
-        Orders with better prices (minimum sell or maximum buy) fullfilled first
-        that's why it's very important to pass sorted lists in parameters
-
-        :param sell_list: list of sell orders SORTED incremental
-        :type sell_list: list of orders
-        :param buy_list: list of buy orders SORTED decrementaly
-        :type buy_list: list of orders
+        """executes matching between list of sell orders and a list of buy orders
+        will compare eache buy order againest all sell orders
+        
+        :param sell_list: list of sell orders
+        :type sell_list: list
+        :param buy_list: list of buy orders
+        :type buy_list: list
         """
-        current_sell_index = 0
-        # a deadlock happens when the biggest price_max for buy orders is
-        # less taht the smallest price_min for sell orders
-        # or when we run out of sell orders
-        dead_lock = False
-        for buy_order in buy_list:
-            # self.visualize_lists(sell_list, buy_list)
-            if dead_lock:
-                break
-            fulfillled = False
-            while not fulfillled:
-                if len(sell_list) > current_sell_index: 
-                    sell_order = sell_list[current_sell_index]
-                    if sell_order['price_min_usd'] <= buy_order['price_max_usd']:
-                        trade_amount = 0
-                        if sell_order['amount'] == buy_order['amount']:
-                            trade_amount = sell_order['amount']
-                            buy_order['amount'] = 0
-                            sell_order['amount'] = 0
-                            current_sell_index += 1
-                            fulfillled = True
-                        elif sell_order['amount'] < buy_order['amount']:
-                            trade_amount = sell_order['amount']
-                            buy_order['amount'] -= sell_order['amount']
-                            sell_order['amount'] = 0
-                            current_sell_index += 1
-                        elif sell_order['amount'] > buy_order['amount']:
-                            trade_amount = buy_order['amount']
-                            sell_order['amount'] -= buy_order['amount']
-                            buy_order['amount'] = 0
-                            fulfillled = True
-                        #TODO: send command to trader
-                        self.logger.info("sending {}{}".format(trade_amount, sell_order['currency_to_sell']))
-                    else:
-                        self.logger.info("order can't be matched min_price for sell = {} and the max_price for buy ={}"
-                            .format(sell_order['price_min'], buy_order['price_max']))
-                        dead_lock = True
-                        break
 
+        
+        sell_list = self.toDict(sell_list)
+        buy_list = self.toDict(buy_list)
+
+        for buy_order in buy_list:
+            buy_price_str = buy_order['price_max']
+            fulfilled = False
+            while not fulfilled:
+                self.visualize_lists(sell_list, buy_list)
+                best_sell = None
+                best_sell_index = None
+                for index, sell_order in enumerate(sell_list):
+                    if self.is_valid(sell_order, buy_order):
+                        if best_sell == None:
+                            best_sell = sell_order
+                            best_sell_index = index
+                        else:
+                            best_sell_price = best_sell['price_min']
+                            current_sell_price = sell_order['price_min']
+                            if currencies_compare(best_sell_price, sell_price_str) == 1: # if the best sell price is bigger than the current sell price
+                                best_sell = sell_order
+                                best_sell_index = index
+                    else:
+                        continue
+
+                if best_sell:
+                    trade_amount = 0
+                    if best_sell['amount'] == buy_order['amount']:
+                        trade_amount = best_sell['amount']
+                        buy_order['amount'] = 0
+                        del sell_list[best_sell_index]
+                        fulfilled = True
+                    elif best_sell['amount'] < buy_order['amount']:
+                        trade_amount = best_sell['amount']
+                        buy_order['amount'] -= best_sell['amount']
+                        del sell_list[best_sell_index]
+                    elif best_sell['amount'] > buy_order['amount']:
+                        trade_amount = buy_order['amount']
+                        sell_list[best_sell_index]['amount'] -= buy_order['amount']
+                        buy_order['amount'] = 0
+                        fulfilled = True
+                    #TODO: send command to trader
+                    self.logger.info("sending {}{}".format(trade_amount, best_sell['currency_to_sell']))
                 else:
-                    self.logger.warning("no sell orders to fullfill")
-                    dead_lock = True
                     break
-        # self.visualize_lists(sell_list, buy_list)
-    
-    def test(self):
-        buy_list, sell_list = self.test_data
-        self.match(sell_list, buy_list)
-    
-    @property
-    def test_data(self):
-        sell_list = [
-            {
-                "comment": "",
-                "currency_to_sell": "TFT",
-                "amount": 14,
-                "currency_accept" : ['BTC'],
-                "price_min": 10,           
-                "expiration": 0,
-                "sell_to": None,
-                "secret": None
-            },
-            {
-                "comment": "",
-                "currency_to_sell": "TFT",
-                "amount": 40,
-                "currency_accept" : ['BTC'],
-                "price_min": 10,           
-                "expiration": 0,
-                "sell_to": None,
-                "secret": None
-            },
-            {
-                "comment": "",
-                "currency_to_sell": "TFT",
-                "amount": 60,
-                "currency_accept" : ['BTC'],
-                "price_min": 11,           
-                "expiration": 0,
-                "sell_to": None,
-                "secret": None
-            },
-            {
-                "comment": "",
-                "currency_to_sell": "TFT",
-                "amount": 65,
-                "currency_accept" : ['BTC'],
-                "price_min": 11,           
-                "expiration": 0,
-                "sell_to": None,
-                "secret": None
-            },
-            {
-                "comment": "this min price is bigger than any max price of any buy order",
-                "currency_to_sell": "TFT",
-                "amount": 48,
-                "currency_accept" : ['BTC'],
-                "price_min": 100,           
-                "expiration": 0,
-                "sell_to": None,
-                "secret": None
-            },
-        ]
-        buy_list = [
-            {
-                "comment": "",
-                "currency_to_buy": "TFT",
-                "currency_mine": "BTC",
-                "amount": 21,
-                "price_max": 15,
-                "expiration": 0,
-                "buy_from": None,
-                "secret": ""
-            },
-            {
-                "comment": "",
-                "currency_to_buy": "TFT",
-                "currency_mine": "BTC",
-                "amount": 16,
-                "price_max": 15,
-                "expiration": 0,
-                "buy_from": None,
-                "secret": ""
-            },
-            {
-                "comment": "",
-                "currency_to_buy": "TFT",
-                "currency_mine": "BTC",
-                "amount": 100,
-                "price_max": 15,
-                "expiration": 0,
-                "buy_from": None,
-                "secret": ""
-            }
-            
-        ]
-        return buy_list, sell_list
+
+    def currencies_compare(self, currency1, currency2):
+        """compares two string representations of currency
+        if both parameters of the same currency it will directly compare values
+        otherwise the second parameter will be be converted to the first parameter currency first
+        Example:
+        self.currencies_compare("10.0 EUR", "10.0 USD")
+        
+        :param currency1: string reprentation of currency1
+        :type currency1: string
+        :param currency2: string reprentation of currency1
+        :type currency2: string
+
+        :return 
+        0 means equal
+        1 greater than
+        -1 less than
+        """
+        currency1_value ,currency1_currency = Numeric.getCur(currency1)
+        currency2_value ,currency2_currency = Numeric.getCur(currency2)
+
+        if currency1_currency != currency2_currency:
+            price = cryptocompare.get_price(currency2_currency, currency1_currency)
+            currency2_value = currency2_value * price
+            currency2_currency = currency1_currency
+
+        # its safe now to compare value
+        if currency1_value == currency2_value:
+            return 0
+        elif currency1_value < currency2_value:
+            return -1
+        elif currency1_value > currency2_value:
+            return 1
+
+    def is_valid(self, sell_order, buy_order):
+        """this method checks if the two orders can be matched or not according the following
+        1- check expiration for both orders
+        2- check if these orders have secrets, and validate these secrets
+        3- check if these orders have the same currencies targeted
+        4- check if the price_max for the buy order is greater than or equal price_min for sell order 
+        
+        :param sell_order: sell order
+        :type sell_order: dict
+        :param buy_order: buy order
+        :type buy_order: dict
+        """
+        now = j.data.time.epoch
+        if Date.fromString(sell_order['expiration']) < now or Date.fromString(buy_order['expiration']) < now:
+            return False
+        
+        if len(sell_order['secret']) > 0 or len(buy_order['secret']) > 0:
+            if not buy_order['secret'] in buy_order['secret']:
+                return False
+        
+        interesection = set(sell_order['currency_accept']) & set(buy_order['currency_mine']) #if not none means that the buyer accepts one of the seller's currencies
+        if sell_order['currency_to_sell'] != buy_order['currency_to_buy'] or not interesection:
+            return False
+
+        if self.currencies_compare(sell_order['price_min'], buy_order['price_max']) == 1:
+            return False
+
+        return True
+
+
+    def toDict(self, data):
+        """converts list of DBModels to list of dicts
+        """
+
+        ret = []
+        for item in data:
+            ret.append(item.ddict_hr)
+        return ret
     
     def visualize_lists(self, sell_orders, buy_orders):
         print("TYPE\t AMOUNT\t PRICE")
@@ -173,6 +159,3 @@ class Matcher(JSBASE,):
             print("SELL\t {}\t {}".format(sell_order['amount'], sell_order['price_min']))
         for buy_order in buy_orders:
             print("BUY\t {}\t {}".format(buy_order['amount'], buy_order['price_max']))
-
-if __name__ == "__main__":
-    Matcher('test').test()
