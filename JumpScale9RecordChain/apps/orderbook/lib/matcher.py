@@ -17,7 +17,6 @@ class Matcher(JSBASE,):
         this should be spawned by gevent
         
         """
-
         while(True):
             gevent.sleep(5)
             self.logger.info("Matching started")
@@ -34,8 +33,6 @@ class Matcher(JSBASE,):
         :param buy_list: list of buy orders
         :type buy_list: list
         """
-
-        
         sell_list = self.toDict(sell_list)
         buy_list = self.toDict(buy_list)
 
@@ -54,7 +51,7 @@ class Matcher(JSBASE,):
                         else:
                             best_sell_price = best_sell['price_min']
                             current_sell_price = sell_order['price_min']
-                            if currencies_compare(best_sell_price, sell_price_str) == 1: # if the best sell price is bigger than the current sell price
+                            if self.currencies_compare(best_sell_price, sell_price_str) == 1: # if the best sell price is bigger than the current sell price
                                 best_sell = sell_order
                                 best_sell_index = index
                     else:
@@ -142,7 +139,6 @@ class Matcher(JSBASE,):
             return False
 
         return True
-
 
     def toDict(self, data):
         """converts list of DBModels to list of dicts
