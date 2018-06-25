@@ -37,7 +37,6 @@ class Matcher(JSBASE,):
         buy_list = self.toDict(buy_list)
 
         for buy_order in buy_list:
-            buy_price_str = buy_order['price_max']
             fulfilled = False
             while not fulfilled:
                 self.visualize_lists(sell_list, buy_list)
@@ -51,32 +50,30 @@ class Matcher(JSBASE,):
                         else:
                             best_sell_price = best_sell['price_min']
                             current_sell_price = sell_order['price_min']
-                            if self.currencies_compare(best_sell_price, sell_price_str) == 1: # if the best sell price is bigger than the current sell price
+                            if self.currencies_compare(best_sell_price, current_sell_price) == 1: # if the best sell price is bigger than the current sell price
                                 best_sell = sell_order
                                 best_sell_index = index
-                    else:
-                        continue
-
-                if best_sell:
-                    trade_amount = 0
-                    if best_sell['amount'] == buy_order['amount']:
-                        trade_amount = best_sell['amount']
-                        buy_order['amount'] = 0
-                        del sell_list[best_sell_index]
-                        fulfilled = True
-                    elif best_sell['amount'] < buy_order['amount']:
-                        trade_amount = best_sell['amount']
-                        buy_order['amount'] -= best_sell['amount']
-                        del sell_list[best_sell_index]
-                    elif best_sell['amount'] > buy_order['amount']:
-                        trade_amount = buy_order['amount']
-                        sell_list[best_sell_index]['amount'] -= buy_order['amount']
-                        buy_order['amount'] = 0
-                        fulfilled = True
-                    #TODO: send command to trader
-                    self.logger.info("sending {}{}".format(trade_amount, best_sell['currency_to_sell']))
-                else:
+                if not best_sell:
                     break
+
+                trade_amount = 0
+                if best_sell['amount'] == buy_order['amount']:
+                    trade_amount = best_sell['amount']
+                    buy_order['amount'] = 0
+                    del sell_list[best_sell_index]
+                    fulfilled = True
+                elif best_sell['amount'] < buy_order['amount']:
+                    trade_amount = best_sell['amount']
+                    buy_order['amount'] -= best_sell['amount']
+                    del sell_list[best_sell_index]
+                elif best_sell['amount'] > buy_order['amount']:
+                    trade_amount = buy_order['amount']
+                    sell_list[best_sell_index]['amount'] -= buy_order['amount']
+                    buy_order['amount'] = 0
+                    fulfilled = True
+                #TODO: send command to trader
+                self.logger.info("sending {}{}".format(trade_amount, best_sell['currency_to_sell']))
+
 
     def currencies_compare(self, currency1, currency2):
         """compares two string representations of currency
