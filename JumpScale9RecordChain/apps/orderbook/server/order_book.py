@@ -187,7 +187,7 @@ class order_book(JSBASE):
     def list_my_sell_orders(self, sortby, desc):
         """
         ```in
-            sortby = (S) # Field name to sort with
+            sortby = id (S) # Field name to sort with
             desc = (B) # Descending order
         ```
 
@@ -200,7 +200,7 @@ class order_book(JSBASE):
     def list_my_buy_orders(self, sortby, desc):
         """
         ```in
-            sortby = (S) # Field name to sort with
+            sortby = id (S) # Field name to sort with
             desc = (B) # Descending order
         ```
 
@@ -213,7 +213,7 @@ class order_book(JSBASE):
     def list_all_sell_orders(self, sortby, desc):
         """
         ```in
-            sortby = (S) # Field name to sort with
+            sortby = id (S) # Field name to sort with
             desc = (B) # Descending order
         ```
 
@@ -233,7 +233,7 @@ class order_book(JSBASE):
     def list_all_buy_orders(self, sortby, desc):
         """
         ```in
-            sortby = (S) # Field name to sort with
+            sortby = id (S) # Field name to sort with
             desc = (B) # Descending order
         ```
 

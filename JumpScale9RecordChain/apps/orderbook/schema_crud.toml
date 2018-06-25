@@ -13,9 +13,9 @@ approved = (B)              # if True, object will be scheduled for matching, fu
 
 # Sell Order Update Schema
 @url = threefoldtoken.order.sell.update
-comment = ""
 @name = ordersellinput
 id = (I)                    # Object ID
+comment = ""
 currency_to_sell = "" (S)   # currency types BTC/ETH/XRP/TFT
 currency_accept = (LS)      # can accept more than one currency
 amount = (F)                # amount

@@ -39,23 +39,27 @@ class OrderBuy(object):
         :type order: !threefoldtoken.order.sell
         :type wallet: !threefoldtoken.wallet
         """
-        if order.id in j.servers.gedis2.latest.context['buy_orders']:
-            old_order = j.servers.gedis2.latest.context['buy_orders'][order.id]
+        id = order.id
 
-            if old_order.wallet_addr != wallet.addr:
-                raise RuntimeError('Not authorized')
-
-            if old_order.approved:
-                raise RuntimeError('Order is locked. No more updates are possible')
-
-            order.owner_email_addr = wallet.email
-            order.wallet_addr = wallet.addr
-
-            j.servers.gedis2.latest.db.tables['orderbuy'].set(id=order.id, data=order.data)
-            j.servers.gedis2.latest.context['buy_orders'][order.id] = order
-            return order.id
-        else:
+        if id not in j.servers.gedis2.latest.context['buy_orders']:
             raise RuntimeError('not found')
+
+        old_order = j.servers.gedis2.latest.context['buy_orders'][id]
+
+        if old_order.wallet_addr != wallet.addr:
+            raise RuntimeError('Not authorized')
+
+        if old_order.approved:
+            raise RuntimeError('Order is locked. No more updates are possible')
+
+        o = j.data.schema.schema_from_url('threefoldtoken.order.buy').new()
+        o.copy_from(order)
+
+        o.owner_email_addr = wallet.email
+        o.wallet_addr = wallet.addr
+        j.servers.gedis2.latest.db.tables['orderbuy'].set(id=id, data=o.data)
+        j.servers.gedis2.latest.context['buy_orders'][id] = o
+        return id
 
     @classmethod
     def remove(cls, wallet, id):
@@ -79,7 +83,7 @@ class OrderBuy(object):
             raise RuntimeError('not found')
 
     @classmethod
-    def list(cls, wallet=None, sortby='price_max', desc=False):
+    def list(cls, wallet=None, sortby='id', desc=False, **kwargs):
         """
         List / Filter Buy orders
         If wallet is provided, get user orders only
@@ -91,26 +95,31 @@ class OrderBuy(object):
         :type sortby: str
         :param desc: Descending order
         :type desc: bool
+        :param kwargs: filter result according to the provided value for a given field
         :return: List of buy orders
         :rtype: list
         """
         orders = []
 
         for k, v in j.servers.gedis2.latest.context['buy_orders'].items():
-            if wallet is not None:
-                if v.wallet_addr == wallet.addr:
-                    orders.append(v)
-            else:
-                orders.append(v)
+            # Filter only orders belonging to certain wallet if provided
+            if wallet is not None and v.wallet_addr != wallet.addr:
+                continue
 
+            # filter only orders matching the passed kwargs filters (exact values)
+            valid = True
+            for field, value in kwargs.items():
+                if hasattr(field, value) and getattr(v, field) != value:
+                    valid = False
+                    break
+            if valid:
+                orders.append(v)
         if not sortby:
             orders.sort(key=lambda x: x.id, reverse=desc)
         else:
             def sort_func(order):
-                return getattr(order, '%s_usd' % sortby)
-
+                return getattr(order, sortby)
             orders.sort(key=sort_func, reverse=desc)
-
         return orders
 
     @classmethod
@@ -127,5 +136,6 @@ class OrderBuy(object):
             order = j.servers.gedis2.latest.context['buy_orders'][id]
             if order.wallet_addr != wallet.addr:
                 raise RuntimeError('Not authorized')
-            return j.servers.gedis2.latest.context['buy_orders'].get(id)
+            order.id = id
+            return order
         raise RuntimeError('not found')

@@ -39,8 +39,8 @@ email = "" (S)              # Email address
 username = "" (S)           # User name
 
 # Transaction
-@url = threefoldtoken.wallet
-@name = wallet
+@url = threefoldtoken.transaction
+@name = transaction
 buy_order_id = (I)
 sell_order_id = (I)
 amount_bought = (F)
