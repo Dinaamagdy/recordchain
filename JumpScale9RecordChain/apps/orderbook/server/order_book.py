@@ -1,9 +1,10 @@
+import gevent
+from js9 import j
+
 from orderbook.lib.orderbook import OrderBook
 from orderbook.lib.idgen import SellOrderIDGenerator, BuyOrderIDGenerator
 from orderbook.lib.matcher import Matcher
-import gevent 
-from js9 import j
-
+from orderbook.lib.trader import Trader
 
 JSBASE = j.application.jsbase_get_class()
 
@@ -22,9 +23,10 @@ class order_book(JSBASE):
                 'wallets': {},
                 'sell_orders':{},
                 'buy_orders': {},
-                'sell_orders_id': SellOrderIDGenerator(max_queue_size=10000),
-                'buy_orders_id': BuyOrderIDGenerator(max_queue_size=10000),
-                'matcher': Matcher()
+                'sell_orders_ids_generator': SellOrderIDGenerator(max_queue_size=10000),
+                'buy_orders_ids_generator': BuyOrderIDGenerator(max_queue_size=10000),
+                'matcher': Matcher(),
+                'trader': Trader()
             }
             gevent.spawn(j.servers.gedis2.latest.context['matcher'].run)
 

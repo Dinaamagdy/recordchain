@@ -10,8 +10,36 @@ JSBASE = j.application.jsbase_get_class()
 Numeric = j.data.types.numeric
 Date = j.data.types.date
 
+
 class Matcher(JSBASE,):
-    
+    """
+    Matcher
+    """
+    def __init__(self):
+        # Maintain a copy of approved sell & buy ordders
+        # This version can be manipulated
+        # at any instance of time it will contain the current state
+        # of order book
+        JSBASE.__init__(self)
+        self.approved_sell_orders = []
+        self.approved_buy_orders = []
+
+    def add_buy_order(self, order):
+        """
+        Append buy order
+        :param order: order
+        :type order: !threefoldtoken.buy
+        """
+        self.approved_buy_orders.append(order.ddict_hr)
+
+    def add_sell_order(self, order):
+        """
+        Append buy order
+        :param order: order
+        :type order: !threefoldtoken.buy
+        """
+        self.approved_sell_orders.append(order.ddict_hr)
+
     def run(self):
         """starts matching every 5 seconds
         this should be spawned by gevent
@@ -20,9 +48,7 @@ class Matcher(JSBASE,):
         while(True):
             gevent.sleep(5)
             self.logger.info("Matching started")
-            sell_list = OrderSell().list(wallet=None)
-            buy_list = OrderBuy().list(wallet=None)
-            self.match(sell_list, buy_list)
+            self.match(self.approved_sell_orders, self.approved_buy_orders)
 
     def match(self, sell_list, buy_list):
         """executes matching between list of sell orders and a list of buy orders
@@ -33,9 +59,8 @@ class Matcher(JSBASE,):
         :param buy_list: list of buy orders
         :type buy_list: list
         """
-        sell_list = self.toDict(sell_list)
-        buy_list = self.toDict(buy_list)
-
+        # @TODO: skip oders with 0 amounts instead of deleting them
+        transactions = []
         for buy_order in buy_list:
             fulfilled = False
             while not fulfilled:
@@ -137,14 +162,6 @@ class Matcher(JSBASE,):
 
         return True
 
-    def toDict(self, data):
-        """converts list of DBModels to list of dicts
-        """
-
-        ret = []
-        for item in data:
-            ret.append(item.ddict_hr)
-        return ret
     
     def visualize_lists(self, sell_orders, buy_orders):
         print("TYPE\t AMOUNT\t PRICE")
