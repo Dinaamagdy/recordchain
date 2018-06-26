@@ -27,7 +27,13 @@ class Matcher(JSBASE,):
         self.approved_sell_orders = []
         self.approved_buy_orders = []
         self.evt = Event()
-        self.trader = None
+        self._trader = None
+
+    @property
+    def trader(self):
+        if not self._trader:
+            self._trader = j.servers.gedis2.latest.context['trader']
+        return self._trader
 
     def add_buy_order(self, order):
         """
@@ -51,12 +57,11 @@ class Matcher(JSBASE,):
         gevent.sleep(0)
         self.evt.clear()
 
-    def run(self, trader):
+    def run(self):
         """starts matching every 5 seconds
         this should be spawned by gevent
         
         """
-        self.trader = trader
         while(True):
             self.logger.info("Matching started")
             self.match(self.approved_sell_orders, self.approved_buy_orders)
