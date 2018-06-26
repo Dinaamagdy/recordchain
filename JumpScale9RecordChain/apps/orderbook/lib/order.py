@@ -32,6 +32,7 @@ class Order(object):
 
         # Generate new sequential ID for that order from ID generator of same order type
         order_id = self.id_generator.get()
+        order.id = order_id
 
         # Persist to db
         # Only to keep track of history
@@ -80,6 +81,8 @@ class Order(object):
         order = self.schema.new().copy(obj=order)
         order.owner_email_addr = wallet.email
         order.wallet_addr = wallet.addr
+
+        order.id = order_id
 
         # Persist to db
         # Only to keep track of history
