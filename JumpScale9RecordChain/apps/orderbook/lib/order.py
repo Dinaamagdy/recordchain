@@ -25,6 +25,7 @@ class Order(object):
         # we need to convert it to !threefoldtoken.order.{type}
         # because the latter contains more fields we want like `owner_email_addr` & `wallet_addr`
         # for that order. otherwise we can not se the values for these fields
+
         order = self.schema.new().copy(obj=order)
         order.owner_email_addr = wallet.email
         order.wallet_addr = wallet.addr

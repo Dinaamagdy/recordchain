@@ -35,8 +35,6 @@ class Matcher(JSBASE,):
         :param order: order
         :type order: !threefoldtoken.buy or !threefoldtoken.sell
         """
-        self.approved_sell_orders.append(order.ddict_hr)
-
         if order.schema.name == 'orderbuy':
             self.approved_buy_orders.append(order.ddict_hr)
         else:
