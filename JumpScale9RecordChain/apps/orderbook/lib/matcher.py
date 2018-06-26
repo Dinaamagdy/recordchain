@@ -22,13 +22,12 @@ class Matcher(JSBASE,):
         self.approved_sell_orders = []
         self.approved_buy_orders = []
         self.evt = Event()
-        self._trader = None
+        g = gevent.spawn(self.run)
+        g.start()
 
     @property
     def trader(self):
-        if not self._trader:
-            self._trader = j.servers.gedis2.latest.context['trader']
-        return self._trader
+            return j.servers.gedis2.latest.context['trader']
 
     def add_order(self, order):
         """
