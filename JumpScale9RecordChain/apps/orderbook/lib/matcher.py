@@ -1,11 +1,6 @@
-
 from js9 import j
 from gevent.event import Event
-from json import loads
 import cryptocompare
-from orderbook.lib.orderbuy import OrderBuy
-from orderbook.lib.ordersell import OrderSell
-
 from orderbook.lib.transaction import Transaction
 import gevent
 
@@ -35,24 +30,19 @@ class Matcher(JSBASE,):
             self._trader = j.servers.gedis2.latest.context['trader']
         return self._trader
 
-    def add_buy_order(self, order):
+    def add_order(self, order):
         """
-        Append buy order
+        Append order
         :param order: order
-        :type order: !threefoldtoken.buy
-        """
-        self.approved_buy_orders.append(order.ddict_hr)
-        self.evt.set()
-        gevent.sleep(0)
-        self.evt.clear()
-
-    def add_sell_order(self, order):
-        """
-        Append buy order
-        :param order: order
-        :type order: !threefoldtoken.buy
+        :type order: !threefoldtoken.buy or !threefoldtoken.sell
         """
         self.approved_sell_orders.append(order.ddict_hr)
+
+        if order.schema.name == 'orderbuy':
+            self.approved_buy_orders.append(order.ddict_hr)
+        else:
+            self.approved_sell_orders.append(order.ddict_hr)
+
         self.evt.set()
         gevent.sleep(0)
         self.evt.clear()

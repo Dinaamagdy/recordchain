@@ -1,7 +1,4 @@
-from js9 import j
-
-from orderbook.lib.ordersell import OrderSell
-from orderbook.lib.orderbuy import OrderBuy
+from orderbook.lib.order import Order
 from orderbook.lib.wallet import Wallet
 from orderbook.lib.decorators import is_logged_in
 
@@ -10,13 +7,20 @@ class OrderBook(object):
 
     wallet = Wallet()
 
+    _buy = None
+    _sell = None
+
     @property
     @is_logged_in
     def buy(self):
-        return OrderBuy
+        if not self._buy:
+            self._buy = Order('buy')
+        return self._buy
 
     @property
     @is_logged_in
     def sell(self):
-        return OrderSell
+        if not self._sell:
+            self._sell = Order('sell')
+        return self._sell
 

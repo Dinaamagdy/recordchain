@@ -16,7 +16,6 @@ class order_book(JSBASE):
     """
     def __init__(self):
         JSBASE.__init__(self)
-        self.orderbook = OrderBook()
 
         if not hasattr(j.servers.gedis2.latest, 'context'):
             j.servers.gedis2.latest.context = {
@@ -28,7 +27,10 @@ class order_book(JSBASE):
                 'matcher': Matcher(),
                 'trader': Trader()
             }
+
             gevent.spawn(j.servers.gedis2.latest.context['matcher'].run)
+
+        self.orderbook = OrderBook()
 
     def login(self, wallet, schema_out):
         """
