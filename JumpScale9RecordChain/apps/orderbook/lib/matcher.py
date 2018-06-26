@@ -94,12 +94,12 @@ class Matcher(JSBASE,):
                 if best_sell['amount'] == buy_order['amount']:
                     trade_amount = best_sell['amount']
                     buy_order['amount'] = 0
-                    del sell_list[best_sell_index]
+                    sell_list[best_sell_index]['amount'] = 0
                     fulfilled = True
                 elif best_sell['amount'] < buy_order['amount']:
                     trade_amount = best_sell['amount']
                     buy_order['amount'] -= best_sell['amount']
-                    del sell_list[best_sell_index]
+                    sell_list[best_sell_index]['amount'] = 0
                 elif best_sell['amount'] > buy_order['amount']:
                     trade_amount = buy_order['amount']
                     sell_list[best_sell_index]['amount'] -= buy_order['amount']
