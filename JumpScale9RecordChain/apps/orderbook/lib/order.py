@@ -25,7 +25,7 @@ class Order(object):
         # we need to convert it to !threefoldtoken.order.{type}
         # because the latter contains more fields we want like `owner_email_addr` & `wallet_addr`
         # for that order. otherwise we can not se the values for these fields
-        order = self.schema.get(capnpbin=order.data)
+        order = self.schema.new().copy(obj=order)
         order.owner_email_addr = wallet.email
         order.wallet_addr = wallet.addr
 
@@ -76,7 +76,7 @@ class Order(object):
         # we need to convert it to !threefoldtoken.order.{type}
         # because the latter contains more fields we want like `owner_email_addr` & `wallet_addr`
         # for that order. otherwise we can not set the values for these fields
-        order = self.schema.get(capnpbin=order.data)
+        order = self.schema.new().copy(obj=order)
         order.owner_email_addr = wallet.email
         order.wallet_addr = wallet.addr
 
@@ -149,7 +149,7 @@ class Order(object):
 
         for k, v in self.orders.items():
             # get a copy of that object
-            v = self.schema.get(capnpbin=v.data)
+            v = self.schema.new().copy(obj=v)
 
             # Filter only orders belonging to certain wallet if provided
             if wallet is not None and v.wallet_addr != wallet.addr:
