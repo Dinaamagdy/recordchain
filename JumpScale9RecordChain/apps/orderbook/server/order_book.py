@@ -28,7 +28,8 @@ class order_book(JSBASE):
                 'matcher': Matcher(),
                 'trader': Trader()
             }
-            gevent.spawn(j.servers.gedis2.latest.context['matcher'].run)
+            gevent.spawn(j.servers.gedis2.latest.context['matcher'].run,
+                        j.servers.gedis2.latest.context['trader'])
 
     def login(self, wallet, schema_out):
         """

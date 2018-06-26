@@ -1,9 +1,12 @@
 
 from js9 import j
+from gevent.event import Event
 from json import loads
 import cryptocompare
 from orderbook.lib.orderbuy import OrderBuy
 from orderbook.lib.ordersell import OrderSell
+
+from orderbook.lib.transaction import Transaction
 import gevent
 
 JSBASE = j.application.jsbase_get_class()
@@ -23,6 +26,8 @@ class Matcher(JSBASE,):
         JSBASE.__init__(self)
         self.approved_sell_orders = []
         self.approved_buy_orders = []
+        self.evt = Event()
+        self.trader = None
 
     def add_buy_order(self, order):
         """
@@ -31,6 +36,9 @@ class Matcher(JSBASE,):
         :type order: !threefoldtoken.buy
         """
         self.approved_buy_orders.append(order.ddict_hr)
+        self.evt.set()
+        gevent.sleep(0)
+        self.evt.clear()
 
     def add_sell_order(self, order):
         """
@@ -39,16 +47,22 @@ class Matcher(JSBASE,):
         :type order: !threefoldtoken.buy
         """
         self.approved_sell_orders.append(order.ddict_hr)
+        self.evt.set()
+        gevent.sleep(0)
+        self.evt.clear()
 
-    def run(self):
+    def run(self, trader):
         """starts matching every 5 seconds
         this should be spawned by gevent
         
         """
+        self.trader = trader
         while(True):
-            gevent.sleep(5)
             self.logger.info("Matching started")
             self.match(self.approved_sell_orders, self.approved_buy_orders)
+            self.logger.info("Done matching, waiting for new orders")
+            self.evt.wait()
+            gevent.sleep(0)
 
     def match(self, sell_list, buy_list):
         """executes matching between list of sell orders and a list of buy orders
@@ -59,15 +73,18 @@ class Matcher(JSBASE,):
         :param buy_list: list of buy orders
         :type buy_list: list
         """
-        # @TODO: skip oders with 0 amounts instead of deleting them
         transactions = []
         for buy_order in buy_list:
+            if buy_order['amount'] == 0:
+                continue
             fulfilled = False
             while not fulfilled:
                 self.visualize_lists(sell_list, buy_list)
                 best_sell = None
                 best_sell_index = None
                 for index, sell_order in enumerate(sell_list):
+                    if sell_order['amount'] == 0:
+                        continue
                     if self.is_valid(sell_order, buy_order):
                         if best_sell == None:
                             best_sell = sell_order
@@ -96,8 +113,15 @@ class Matcher(JSBASE,):
                     sell_list[best_sell_index]['amount'] -= buy_order['amount']
                     buy_order['amount'] = 0
                     fulfilled = True
-                #TODO: send command to trader
-                self.logger.info("sending {}{}".format(trade_amount, best_sell['currency_to_sell']))
+
+                transaction = Transaction.new(best_sell['id'],
+                                                buy_order['id'],
+                                                trade_amount,
+                                                buy_order['currency_to_buy'])
+                transactions.append(transaction)
+
+        self.trader.put(transactions)
+        self.logger.info("sending {}".format(transactions))
 
 
     def currencies_compare(self, currency1, currency2):
