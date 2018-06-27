@@ -27,7 +27,7 @@ class Matcher(JSBASE,):
 
     @property
     def trader(self):
-            return j.servers.gedis2.latest.context['trader']
+        return j.servers.gedis2.latest.context['trader']
 
     def add_order(self, order):
         """
@@ -45,16 +45,19 @@ class Matcher(JSBASE,):
         self.evt.clear()
 
     def run(self):
-        """starts matching every 5 seconds
+        """ run the matcher whenever any order is added to the orderbook
         this should be spawned by gevent
         
         """
         while(True):
-            self.logger.info("Matching started")
-            self.match(self.approved_sell_orders, self.approved_buy_orders)
-            self.logger.info("Done matching, waiting for new orders")
+            self.logger.info("Waiting for new orders to match")
             self.evt.wait()
             gevent.sleep(0)
+            self.logger.info("Matching started")
+            transactions = self.match(self.approved_sell_orders, self.approved_buy_orders)
+            if transactions:
+                self.trader.put(transactions)
+            self.logger.info("Done matching")
 
     def match(self, sell_list, buy_list):
         """executes matching between list of sell orders and a list of buy orders
@@ -112,8 +115,7 @@ class Matcher(JSBASE,):
                                                 buy_order['currency_to_buy'])
                 transactions.append(transaction)
 
-        self.trader.put(transactions)
-        self.logger.info("sending {}".format(transactions))
+        return transactions
 
 
     def currencies_compare(self, currency1, currency2):
