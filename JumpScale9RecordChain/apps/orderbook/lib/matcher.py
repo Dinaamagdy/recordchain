@@ -45,7 +45,7 @@ class Matcher(JSBASE,):
         self.evt.clear()
 
     def run(self):
-        """ run the matcher whenever any order is added to the orderbook
+        """ run the matcher whenever any order is added to the orderbookmm  
         this should be spawned by gevent
         
         """
@@ -74,7 +74,6 @@ class Matcher(JSBASE,):
                 continue
             fulfilled = False
             while not fulfilled:
-                self.visualize_lists(sell_list, buy_list)
                 best_sell = None
                 best_sell_index = None
                 for index, sell_order in enumerate(sell_list):
@@ -112,8 +111,11 @@ class Matcher(JSBASE,):
                 transaction = Transaction.new(best_sell['id'],
                                                 buy_order['id'],
                                                 trade_amount,
-                                                buy_order['currency_to_buy'])
+                                                buy_order['currency_to_buy'],
+                                                self.price_get(sell_order,buy_order,trade_amount))
                 transactions.append(transaction)
+        
+        self.visualize_lists(sell_list, buy_list)
 
         return transactions
 
@@ -139,18 +141,51 @@ class Matcher(JSBASE,):
         currency2_value ,currency2_currency = Numeric.getCur(currency2)
 
         if currency1_currency != currency2_currency:
-            price = cryptocompare.get_price(currency2_currency, currency1_currency)
-            currency2_value = currency2_value * price
+            currency2_value = self.currency_convert(currency2_currency, float(currency2_value), currency1_currency)
             currency2_currency = currency1_currency
 
         # its safe now to compare value
-        if currency1_value == currency2_value:
+        if float(currency1_value) == float(currency2_value):
             return 0
-        elif currency1_value < currency2_value:
+        elif float(currency1_value) < float(currency2_value):
             return -1
-        elif currency1_value > currency2_value:
+        elif float(currency1_value) > float(currency2_value):
             return 1
 
+    def currency_convert(self, currency, amount, target):
+        """convert between two currencies
+        
+        :param currency: the currency to be converted
+        :type currency: string
+        :param amount: amount of currency to be converted
+        :type amount: float
+        :param target: currency to convert to
+        :type target: float
+        :return: value after conversion
+        :rtype: float
+        """
+        price1 = j.clients.currencylayer.cur2usd[target]
+        price2 = j.clients.currencylayer.cur2usd[currency]
+        return (price1 / price2) * amount
+
+    def price_get(self, sell_order, buy_order, amount):
+        """Get the total price of a transactionm
+        
+        :param sell_order: the sell order
+        :type sell_order: dict
+        :param buy_order: the buy order
+        :type buy_order: dict
+        :param amount: the anount to be transfered
+        :type amount: float
+        :return: the transaction price
+        :rtype: float
+        """
+        common_currency = [currency for currency in sell_order['currency_accept'] if currency in buy_order['currency_mine']][0]
+        sell_value, sell_currency = Numeric.getCur(sell_order['price_min'])
+        return amount * self.currency_convert(sell_currency.casefold(), float(sell_value), common_currency.casefold())
+
+
+        
     def is_valid(self, sell_order, buy_order):
         """this method checks if the two orders can be matched or not according the following
         1- check expiration for both orders
@@ -168,7 +203,7 @@ class Matcher(JSBASE,):
             return False
         
         if len(sell_order['secret']) > 0 or len(buy_order['secret']) > 0:
-            if not buy_order['secret'] in buy_order['secret']:
+            if not buy_order['secret'] in sell_order['secret']:
                 return False
         
         interesection = set(sell_order['currency_accept']) & set(buy_order['currency_mine']) #if not none means that the buyer accepts one of the seller's currencies
