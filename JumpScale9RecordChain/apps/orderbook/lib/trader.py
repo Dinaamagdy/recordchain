@@ -20,6 +20,10 @@ class Trader(JSBASE):
         g = gevent.spawn(self._consume)
         g.start()
 
+    @property
+    def matcher(self):
+        return j.servers.gedis2.latest.context['matcher']
+        
     def put(self, transactions):
         """
         Put all transactions coming from a run round of the matcher
@@ -44,9 +48,12 @@ class Trader(JSBASE):
         :param transaction: transaction
         :type transaction: !threefoldtoken.transaction
         """
-        # @TODO: remove orders with 0- amounts from matcher
         self.logger.info("Succeeded transaction")
-        print(transaction)
+        transaction = transaction.ddict_hr
+        sell_index = self._get_index(self.matcher.approved_sell_orders, transaction['sell_order_id'])
+        buy_index = self._get_index(self.matcher.approved_buy_orders, transaction['buy_order_id'])
+        del self.matcher.approved_sell_orders[sell_index]
+        del self.matcher.approved_buy_orders[buy_index]
 
     def _post_failure(self, transaction):
         """
@@ -56,9 +63,12 @@ class Trader(JSBASE):
         :param transaction: transaction
         :type transaction: !threefoldtoken.transaction
         """
-        # @TODO: undo transaction in matcher lists
         self.logger.info("failed transaction")
-        print(transaction)
+        transaction = transaction.ddict_hr
+        sell_index = self._get_index(self.matcher.approved_sell_orders, transaction['sell_order_id'])
+        buy_index = self._get_index(self.matcher.approved_buy_orders, transaction['buy_order_id'])
+        self.matcher.approved_sell_orders[sell_index]['amount'] += transaction['amount_bought']
+        self.matcher.approved_buy_orders[buy_index]['amount'] += transaction['amount_bought']
 
     def process(self, transaction):
         """
@@ -88,6 +98,12 @@ class Trader(JSBASE):
                 self.logger.info("Waiting for transactions to come")
                 self.evt.wait()
                 gevent.sleep(0)
+
+    def _get_index(self, list, id):
+        
+        for index, item in enumerate(list):
+            if item['id'] == id:
+                return index
 
 
 if __name__ == '__main__':

@@ -69,6 +69,12 @@ class Matcher(JSBASE,):
         :type buy_list: list
         """
         transactions = []
+        buy_list = sorted(buy_list, key=lambda order: order['id'], reverse=True)
+        buy_list = sorted(buy_list,
+                          key=lambda order: Numeric.bytes2cur(Numeric.str2bytes(order['price_max'])),
+                          reverse=True)
+        sell_list = sorted(sell_list, key=lambda order: order['id'], reverse=True)
+        
         for buy_order in buy_list:
             if buy_order['amount'] == 0:
                 continue
