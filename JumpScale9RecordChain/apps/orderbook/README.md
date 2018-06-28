@@ -14,32 +14,19 @@ x = j.clients.gedis2.get('orderbook')
 **Login/Register client wallet**
 
 ```python
-jwt = 'blah'
+iyo_client = j.clients.itsyouonline.get()
+jwt = iyo_client.jwt
 x.order_book.login(jwt, ipaddr='my-wallet-ip', addr='my-wallet-addr')
 ```
 
 **Sell Orders**
 
 ```python
-In [2]: x.order_book.add_sell_order(price_min='10 EUR')
-@0xfa3e7566b269d6b5;
+In [2]: x.order_book.add_buy_order(price_max='10 ETH', currency_to_buy='BTC', currency_mine=['USD'], amount=100, expiration=j.data.time.epoch + 1000, approved=True, secret="1")
 
-struct Schema {
-
-    comment @0 :Text;
-    currencyToSell @1 :Text;
-    priceMin @2 :Data;
-    expiration @3 :UInt32;
-
-    currencyAccept @4 :List(Text);
-    sellTo @5 :List(Text);
-    secret @6 :List(Text);
-
-
-}
 Out[2]: 1
 
-In [3]: x.order_book.get_sell_order(1)
+In [3]: x.order_book.get_buy_order(1)
 @0xf5e73fb9827153b0;
 
 struct Schema {
@@ -49,34 +36,40 @@ struct Schema {
 
 
 }
-@0xfb48ef812ec7b22c;
+@0xf6c6005cada3994d;
 
 struct Schema {
 
     comment @0 :Text;
-    currencyToSell @1 :Text;
-    priceMin @2 :Data;
-    expiration @3 :UInt32;
-    ownerEmailAddr @4 :Text;
-    walletAddr @5 :Text;
+    currencyToBuy @1 :Text;
+    priceMax @2 :Data;
+    amount @3 :Float64;
+    expiration @4 :UInt32;
+    secret @5 :Text;
+    approved @6 :Bool;
+    ownerEmailAddr @7 :Text;
+    walletAddr @8 :Text;
 
-    currencyAccept @6 :List(Text);
-    sellTo @7 :List(Text);
-    secret @8 :List(Text);
+    currencyMine @9 :List(Text);
+    buyFrom @10 :List(Text);
 
 
 }
 Out[3]: 
 {
+ "amount": 100.0,
+ "approved": true,
+ "buy_from": [],
  "comment": "",
- "currency_accept": [],
- "currency_to_sell": "",
- "expiration": "1970/01/01 00:00:00",
- "owner_email_addr": "",
- "price_min": "1,381,319,968 EUR",
- "secret": [],
- "sell_to": [],
- "wallet_addr": ""
+ "currency_mine": [
+  "USD"
+ ],
+ "currency_to_buy": "BTC",
+ "expiration": "2018/06/28 09:00:00",
+ "owner_email_addr": "ayouba@greenitglobe.com",
+ "price_max": "10.0 ETH",
+ "secret": "1",
+ "wallet_addr": "addr"
 }
 
 In [4]: x.order_book.list_sell_orders(sortby='price_min')
