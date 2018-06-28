@@ -52,8 +52,13 @@ class Trader(JSBASE):
         transaction = transaction.ddict_hr
         sell_index = self._get_index(self.matcher.approved_sell_orders, transaction['sell_order_id'])
         buy_index = self._get_index(self.matcher.approved_buy_orders, transaction['buy_order_id'])
-        del self.matcher.approved_sell_orders[sell_index]
-        del self.matcher.approved_buy_orders[buy_index]
+        
+        if self.matcher.approved_sell_orders[sell_index]['amount'] == 0:
+            del self.matcher.approved_sell_orders[sell_index]
+        
+        if self.matcher.approved_buy_orders[buy_index]['amount'] == 0:
+            del self.matcher.approved_buy_orders[buy_index]
+        
 
     def _post_failure(self, transaction):
         """
