@@ -34,6 +34,9 @@ class Trader(JSBASE):
         """
         for transaction in transactions:
             self.queue.put(transaction)
+            transaction = transaction.ddict_hr
+            transaction['state'] = 'pending'
+            j.servers.gedis2.latest.context['transactions'].append(transaction)
 
         # Now notify consumer to consume these transactions
         self.evt.set()

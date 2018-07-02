@@ -1,7 +1,7 @@
 from js9 import j
 from gevent.event import Event
 import cryptocompare
-from orderbook.lib.transaction import Transaction
+from orderbook.lib.transactions import Transactions
 import gevent
 
 JSBASE = j.application.jsbase_get_class()
@@ -114,7 +114,7 @@ class Matcher(JSBASE,):
                     buy_order['amount'] = 0
                     fulfilled = True
 
-                transaction = Transaction.new(best_sell['id'],
+                transaction = Transactions.new(best_sell['id'],
                                                 buy_order['id'],
                                                 trade_amount,
                                                 buy_order['currency_to_buy'],

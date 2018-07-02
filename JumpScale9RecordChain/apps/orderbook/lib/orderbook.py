@@ -1,4 +1,6 @@
 from orderbook.lib.order import Order
+from orderbook.lib.transactions import Transactions
+
 from orderbook.lib.wallet import Wallet
 from orderbook.lib.decorators import is_logged_in
 
@@ -9,6 +11,7 @@ class OrderBook(object):
 
     _buy = None
     _sell = None
+    _transactions = None
 
     @property
     @is_logged_in
@@ -24,3 +27,9 @@ class OrderBook(object):
             self._sell = Order('sell')
         return self._sell
 
+    @property
+    @is_logged_in
+    def transactions(self):
+        if not self._transactions:
+            self._transactions = Transactions()
+        return self._transactions
