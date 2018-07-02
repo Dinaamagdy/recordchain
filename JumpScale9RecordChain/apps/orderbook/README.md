@@ -1,5 +1,15 @@
 ## Orderbook
 
+For better understanding of how order book you MUST be familiar with
+- [Schemas](JumpScale9RecordChain/data/schema/README.md)
+- [BCDB database](JumpScale9RecordChain/data/bcdb/README.md)
+- [GEDIS2](JumpScale9RecordChain/servers/gedis2/README.md)
+
+**Specs**
+
+- [HERE](JumpScale9RecordChain/apps/orderbook/specs.md)
+
+
 **Start Server**
 ```python
 s = j.servers.gedis2.get('orderbook')
@@ -101,6 +111,28 @@ In [6]: x.order_book.list_sell_orders(sortby='price_min')
 Out[6]: b'[]'
 
 ```
+
+**Important**
+
+schema files orders is important
+if you make 2 similar schemas (one of which have more fields than the other)
+you need to maintain same order of fileds across both of them
+in order to be able to convert from one of them to the other
+
+**copy objets**
+```python
+new = j.data.schema.schema_from_url('threefoldtoken.order.sell').get(capnpbin=old_obj.data)
+```
+
+
+**Add data to db**
+
+j.servers.gedis2.latest.db.tablesp['ordersell'].set(id=id, data=order.data)
+
+        # You can add data to db also using
+        # data = j.data.serializer.msgpack.dumps([id, order.data])
+        # j.servers.gedis2.latest.models.threefoldtoken_order_sell.set(data)
+
 
 
 
