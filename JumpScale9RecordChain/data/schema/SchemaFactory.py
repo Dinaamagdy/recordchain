@@ -18,10 +18,30 @@ class SchemaFactory(JSBASE):
         self.code_generation_dir = self.scaffold()
 
     def scaffold(self):
-        apps_dir = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-            'apps'
-        )
+        apps_dir = j.dirs.VARDIR+"/codegen/"
+        gedis_instance = None
+
+        # application directory
+        # apps_dir/{instance}
+
+        if hasattr( j.servers.gedis2, 'latest'):
+            gedis_instance = j.servers.gedis2.latest.instance
+        elif hasattr( j.clients.gedis2, 'latest'):
+            gedis_instance = j.clients.gedis2.latest.instance
+
+        if gedis_instance:
+            apps_dir = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                'apps'
+            )
+
+            self.app_dir = os.path.join(
+                apps_dir,
+                gedis_instance
+            )
+
+        else:
+            self.app_dir = apps_dir
 
         if not j.sal.fs.exists(apps_dir):
             j.sal.fs.createDir(apps_dir)
@@ -29,22 +49,7 @@ class SchemaFactory(JSBASE):
         if not apps_dir in sys.path:
             sys.path.append(apps_dir)
 
-        # application directory
-        # apps_dir/{instance}
-
-
-        if hasattr( j.servers.gedis2, 'latest'):
-            self.app_dir = os.path.join(
-                apps_dir,
-                j.servers.gedis2.latest.instance or ''
-            )
-        elif hasattr( j.clients.gedis2, 'latest'):
-            self.app_dir = os.path.join(
-                apps_dir,
-                j.clients.gedis2.latest.instance
-            )
-        else:
-            self.app_dir = apps_dir
+        j.sal.fs.touch(os.path.join(apps_dir, '/__init__.py'))
 
         j.sal.fs.touch(os.path.join(self.app_dir, '/__init__.py'))
 
