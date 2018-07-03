@@ -64,8 +64,14 @@ we are implementing price-time-priority/fifo algorithm to match orders which mea
 
 ## How matcher works
 
-- First we sort orders, buy orders are sorted descending by price_max and sell orders are sorted assending by price_min.
-- Then we check each buy order againest all sell orders to find the best match
+- First we sort orders, buy orders are sorted descending by price_max and ascending by id, then sell orders are sorted ascending by price_min.
+- Then we check each buy order againest all sell orders to find the best match, accourding to the following:
+    - make sure that orders are not expired by checking the expiry date againest the current time
+    - check if sell order or buy order has secrets and if so make sure that these secrets match
+    - check if orders have the same targeted currencies for instance I'm trying to sell the same currency you want to buy and I accept one of your own currencies as price.
+    - check if the price_min for sell is less than the price_max for buy
+    - if all the previous checks passed, there is a possible match so we compare the sell order with the previous best sell order, if there is no previous sell orders, the current order will be considered the best sell order until we find a better sell order
+    
 - When a best match found we calculate the trade amount and generate a transaction
 - Transactions are sent to the trader to do the actual exchange and update database for successful and unsuccessful exchanges
 
