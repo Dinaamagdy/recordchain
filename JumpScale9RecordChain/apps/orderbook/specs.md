@@ -60,7 +60,14 @@ approved orders
 
 # Matching algorithm
 
+we are implementing price-time-priority/fifo algorithm to match orders which means that orders with better prices will be matched first, In case that there are multible orders with the same price the order coming first will be matched first.
 
+## How matcher works
+
+- First we sort orders, buy orders are sorted descending by price_max and sell orders are sorted assending by price_min.
+- Then we check each buy order againest all sell orders to find the best match
+- When a best match found we calculate the trade amount and generate a transaction
+- Transactions are sent to the trader to do the actual exchange and update database for successful and unsuccessful exchanges
 
 
 ## Code
