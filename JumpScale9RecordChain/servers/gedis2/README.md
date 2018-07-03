@@ -4,7 +4,7 @@ A framework that allows for creating applications that are `redis protocol` comp
 and have their own set of `custom redis commands`
 Gedis exposes these commands automatically.
 
-You create an `app/instance server` and you can get a `client` that can connect tpo your app
+You create an `app/instance server` and you can get a `client` that can connect to your app
 and execute the commands easily
 
 Since `gedis` is a `TCP` level framework, it's very fast and efficient
