@@ -56,11 +56,13 @@ class Trader(JSBASE):
         sell_index = self._get_index(self.matcher.approved_sell_orders, transaction['sell_order_id'])
         buy_index = self._get_index(self.matcher.approved_buy_orders, transaction['buy_order_id'])
         
-        if self.matcher.approved_sell_orders[sell_index]['amount'] == 0:
-            del self.matcher.approved_sell_orders[sell_index]
+        # this is making the trader fail in case the matcher set the amount to 0 while there are other transactions pending on the deleted order
+        # TODO: make sure that there is no transactions with the order id involved before deleting
+        # if self.matcher.approved_sell_orders[sell_index]['amount'] == 0:
+        #     del self.matcher.approved_sell_orders[sell_index]
         
-        if self.matcher.approved_buy_orders[buy_index]['amount'] == 0:
-            del self.matcher.approved_buy_orders[buy_index]
+        # if self.matcher.approved_buy_orders[buy_index]['amount'] == 0:
+        #     del self.matcher.approved_buy_orders[buy_index]
         
 
     def _post_failure(self, transaction):
@@ -88,7 +90,6 @@ class Trader(JSBASE):
         """
         # @TODO: Actual transaction logic
         success = True
-
         if success:
             self._post_success(transaction)
         else:
@@ -108,7 +109,6 @@ class Trader(JSBASE):
                 gevent.sleep(0)
 
     def _get_index(self, list, id):
-        
         for index, item in enumerate(list):
             if item['id'] == id:
                 return index

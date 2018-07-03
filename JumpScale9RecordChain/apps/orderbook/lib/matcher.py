@@ -69,12 +69,11 @@ class Matcher(JSBASE,):
         :type buy_list: list
         """
         transactions = []
-        buy_list = sorted(buy_list, key=lambda order: order['id'], reverse=True)
+        buy_list = sorted(buy_list, key=lambda order: order['id'], reverse=False)
         buy_list = sorted(buy_list,
                           key=lambda order: Numeric.bytes2cur(Numeric.str2bytes(order['price_max'])),
                           reverse=True)
-        sell_list = sorted(sell_list, key=lambda order: order['id'], reverse=True)
-        
+        sell_list = sorted(sell_list, key=lambda order: order['id'], reverse=False)
         for buy_order in buy_list:
             if buy_order['amount'] == 0:
                 continue
@@ -122,7 +121,7 @@ class Matcher(JSBASE,):
                 transactions.append(transaction)
         
         self.visualize_lists(sell_list, buy_list)
-
+        print(transactions)
         return transactions
 
 
@@ -216,15 +215,15 @@ class Matcher(JSBASE,):
         if sell_order['currency_to_sell'] != buy_order['currency_to_buy'] or not interesection:
             return False
 
-        if self.currencies_compare(sell_order['price_min'], buy_order['price_max']) == 1:
+        if self.currencies_compare(sell_order['price_min'], buy_order['price_max']) == -1:
             return False
 
         return True
 
     
     def visualize_lists(self, sell_orders, buy_orders):
-        print("TYPE\t AMOUNT\t PRICE")
+        print("TYPE\t id\t AMOUNT\t PRICE")
         for sell_order in sell_orders:
-            print("SELL\t {}\t {}".format(sell_order['amount'], sell_order['price_min']))
+            print("SELL\t {}\t {}\t {}".format(sell_order['id'], sell_order['amount'], sell_order['price_min']))
         for buy_order in buy_orders:
-            print("BUY\t {}\t {}".format(buy_order['amount'], buy_order['price_max']))
+            print("BUY\t {}\t {}\t {}".format(buy_order['id'], buy_order['amount'], buy_order['price_max']))
