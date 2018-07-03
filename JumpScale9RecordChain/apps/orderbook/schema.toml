@@ -41,8 +41,9 @@ username = "" (S)           # User name
 # Transaction
 @url = threefoldtoken.transaction
 @name = transaction
-buy_order_id = (I)
-sell_order_id = (I)
-amount_bought = (F)
-currency = (S)
-total_price = (N)
+buy_order_id = (I)          # id of buy order
+sell_order_id = (I)         # id of sell order
+amount_bought = (F)         # the trade amount
+currency = (S)              # the currency in which the transaction will happen
+total_price = (N)           # total price of the transaction
+state = (S)                 # state of the transaction new/pending/failed/succeeded

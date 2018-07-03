@@ -22,6 +22,7 @@ class order_book(JSBASE):
                 'wallets': {},
                 'sell_orders':{},
                 'buy_orders': {},
+                'transactions': [],
                 'sell_orders_ids_generator': SellOrderIDGenerator(max_queue_size=10000),
                 'buy_orders_ids_generator': BuyOrderIDGenerator(max_queue_size=10000),
                 'matcher': Matcher(),
@@ -251,3 +252,9 @@ class order_book(JSBASE):
             item['wallet_addr'] = ''
             res.append(item)
         return res
+
+    def list_transactions(self, **kwargs):
+        """list all transactions from order book
+        
+        """
+        return [transaction for transaction in self.orderbook.transactions.list(**kwargs)]
