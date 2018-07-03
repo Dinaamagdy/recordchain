@@ -47,39 +47,70 @@ these topics before you can work with orderbook
           client.order_book.login(jwt=jwt, ipaddr='my-wallet-ip', addr='my-wallet-addr')
 
         ```
-    - **Add/Update orders**
-    - Set `approved` field to `True` if you want your order to be final and eligible for matching
-    - **`Warning`** : `approved` order can no more be editable
-    - add:
-       - for buy orders:
+    - **Operations on orders with default values** `client.{operation}`
+        - **`WARNING`** : 
+            - when adding/updating an order, if `approved` field is set to `True`, then order is final
+            and can no more be edited and will start to be eligible for matching against other
+            orders.
+            - Non `approved` orders will not be matched
+        - **API**
+            - `login(jwt='', addr='', ipaddr='', email='', username='')`
+            - `add_buy_order(comment='', currency_to_buy='', price_max='0.0', amount=0.0, expiration=0, secret='', approved=False, currency_mine=[  ], buy_from=[  ])`
+            - `update_sell_order(comment='', currency_to_sell='', price_min='0.0', amount=0.0, expiration=0, approved=False, id=0, currency_accept=[  ], sell_to=[  ], secret=[  ])`
+            - `update_buy_order(self,comment='', currency_to_buy='', price_max='0.0', amount=0.0, expiration=0, secret='', approved=False, id=0, currency_mine=[  ], buy_from=[  ])`
+            - `add_sell_order(comment='', currency_to_sell='', price_min='0.0', amount=0.0, expiration=0, approved=False, currency_accept=[  ], sell_to=[  ], secret=[  ])`
+            - `get_buy_order(order_id=0)`
+            - `get_sell_order(order_id=0)`
+            - `list_all_buy_orders(sortby='id', desc=False)`
+            - `list_all_sell_orders(sortby='id', desc=False)`
+            - `list_my_buy_orders(sortby='id', desc=False)`
+            - `list_my_sell_orders(sortby='id', desc=False)`
+            - `remove_buy_order(order_id=0)`
+            - `remove_sell_order(order_id=0)`
+            - `list_all_transactions(state='*', desc=False) # * means all - change to 'pending', 'success', or 'failure' if you want`
+            - `list_my_transactions(state='*', desc=False) # * means all - change to 'pending', 'success', or 'failure' if you want`       
+        
+
+####  General overview on code structure
+
+- **Structure**
+
+    ```
+        server
+            |
+            |__ order_book.py # Exposed CMDs through server & client
+            |__ system.py # system CMDs like ping
+            
+        lib # SAL layer
+        
+        schema.toml # General schemas
+        schema_crud.toml # schemas for crud operations like create/update
+    ```
+- **Why do We have 2 schema files?**
+    - `schema.toml` contains general schemas like `wallet`, `sellorder`, `buyorder`, and `transaction`
+    - `schema_crud.toml` contains schemas used in `order_book.py` API which is meant for better code generation forexample:
+        - `add_sell_order` we use `threefoldtoken.order.sell.create` from `schema_crud.toml` because it doesn't contain some fields in `threefoldtoken.order.sell` like email address of user
+        - `update_sell_order` must contain `id` field that is why we use `threefoldtoken.order.sell.update` 
+    - That says ussing multi schema files can be helpful if you want to customize code generation
+    for client by hiding or adding certain fields
+
+    - **`WARNING`**
+        - Moving data between 2 similar but not identical schemas can be challenging
+        that is why we use special technique for this. consider the following example
         ```python
-        client.order_book.add_buy_order(price_max='10 ETH', currency_to_buy='BTC', currency_mine=['USD'], amount=100, expiration=j.data.time.epoch + 1000, approved=True, secret="1")
+          # obj of type : threefoldtoken.order.buy.create
+          obj = j.data.schema.schema_from_url('threefoldtoken.order.buy.create').new()
+          
+          buy = j.data.schema.schema_from_url('threefoldtoken.order.buy').new()
+          buy.copy(obj=obj)
         ```
-        - for sell orders you use: `client.order_book.add_sell_order`
-    - In update, you can provide `id` field for order, you want to deal with
-    
-
-**Important**
-
-schema files orders is important
-if you make 2 similar schemas (one of which have more fields than the other)
-you need to maintain same order of fileds across both of them
-in order to be able to convert from one of them to the other
-
-**copy objets**
-```python
-new = j.data.schema.schema_from_url('threefoldtoken.order.sell').get(capnpbin=old_obj.data)
-```
-
-
-**Add data to db**
-
-j.servers.gedis2.latest.db.tablesp['ordersell'].set(id=id, data=order.data)
+ 
+- **Add data to db**
+    ```python
+      j.servers.gedis2.latest.db.tablesp['ordersell'].set(id=id, data=order.data)
 
         # You can add data to db also using
         # data = j.data.serializer.msgpack.dumps([id, order.data])
         # j.servers.gedis2.latest.models.threefoldtoken_order_sell.set(data)
 
-
-
-
+    ```
